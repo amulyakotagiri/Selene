@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Selene - Lunar Pomodoro Timer</title>
-    <script src="https://js.stripe.com/v3/"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         * {
             margin: 0;
@@ -271,17 +271,24 @@
             transition: all 0.3s ease;
             text-align: center;
             position: relative;
+            user-select: none;
         }
 
         .price-card:hover {
             border-color: #a8c0ff;
             background: rgba(168, 192, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .price-card:active {
+            transform: translateY(0);
         }
 
         .price-card.active {
             border-color: #c471ed;
             background: rgba(196, 113, 237, 0.2);
             box-shadow: 0 0 25px rgba(196, 113, 237, 0.4);
+            transform: scale(1.02);
         }
 
         .best-value {
@@ -512,7 +519,7 @@
             </div>
             
             <button class="upgrade-btn" style="font-size: 1.2rem; padding: 1.2rem 3rem; margin-bottom: 3rem;" onclick="document.getElementById('upgradeModal').style.display='flex'">
-                ✨ Get Selene Pro - Starting at $4/month
+                🌟 Join Pro Waitlist - Get 50% Off at Launch!
             </button>
         </div>
     </div>
@@ -530,15 +537,15 @@
             
             <div class="pricing-container">
                 <div class="price-card active" id="monthlyCard">
-                    <div class="price-amount">$4</div>
+                    <div class="price-amount">₹299</div>
                     <div class="price-period">per month</div>
                 </div>
                 
                 <div class="price-card" id="yearlyCard">
                     <div class="best-value">BEST VALUE</div>
-                    <div class="price-amount">$10</div>
+                    <div class="price-amount">₹749</div>
                     <div class="price-period">per year</div>
-                    <div class="price-savings">Save $38 (79%)</div>
+                    <div class="price-savings">Save ₹2839 (79%)</div>
                 </div>
             </div>
             
@@ -553,14 +560,24 @@
             
             <div class="payment-info">
                 <p>
-                    💳 <strong>Secure Payment via Stripe</strong><br>
-                    Cancel anytime • 7-day money-back guarantee
+                    🚀 <strong>Pro Version Coming Soon!</strong><br>
+                    Join the waitlist to get early access + special launch discount<br>
+                    Be the first to experience premium features
                 </p>
             </div>
             
+            <div style="margin: 1rem 0;">
+                <input type="email" id="waitlistEmail" placeholder="Enter your email address" style="width: 100%; padding: 1rem; border: 2px solid rgba(168, 192, 255, 0.3); border-radius: 50px; background: rgba(168, 192, 255, 0.05); color: #e0e0ff; font-size: 1rem; margin-bottom: 0.5rem; outline: none;" />
+                <input type="text" id="waitlistName" placeholder="Your name (optional)" style="width: 100%; padding: 1rem; border: 2px solid rgba(168, 192, 255, 0.3); border-radius: 50px; background: rgba(168, 192, 255, 0.05); color: #e0e0ff; font-size: 1rem; outline: none;" />
+            </div>
+            
             <button class="subscribe-btn" id="checkoutBtn">
-                <span id="btnText">Subscribe Now - $4/month</span>
+                <span id="btnText">🌟 Join Waitlist - Get Notified</span>
             </button>
+            
+            <p style="text-align: center; color: #a8c0ff; font-size: 0.85rem; margin-top: 1rem; opacity: 0.7;">
+                💝 Early birds get 50% off at launch!
+            </p>
             <button class="close-btn" id="closeModal">Maybe Later</button>
         </div>
     </div>
@@ -736,16 +753,13 @@
             selectedPlan = plan;
             const monthlyCard = document.getElementById('monthlyCard');
             const yearlyCard = document.getElementById('yearlyCard');
-            const btnText = document.getElementById('btnText');
             
             if (plan === 'monthly') {
                 monthlyCard.classList.add('active');
                 yearlyCard.classList.remove('active');
-                btnText.textContent = 'Subscribe Now - $4/month';
             } else {
                 yearlyCard.classList.add('active');
                 monthlyCard.classList.remove('active');
-                btnText.textContent = 'Subscribe Now - $10/year';
             }
         }
         
@@ -761,59 +775,89 @@
             }
         }, 100);
 
-        // Stripe Integration
-        const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE';
-        const STRIPE_MONTHLY_PRICE_ID = 'price_YOUR_MONTHLY_PRICE_ID_HERE';
-        const STRIPE_YEARLY_PRICE_ID = 'price_YOUR_YEARLY_PRICE_ID_HERE';
-        
-        let stripe;
-        try {
-            stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
-        } catch (error) {
-            console.error('Stripe initialization failed. Please add your Stripe keys.');
-        }
+        // Waitlist System
+        const waitlistData = [];
         
         document.getElementById('checkoutBtn').addEventListener('click', async () => {
-            if (!stripe) {
-                alert('Payment system is being configured. Please check back soon!');
+            const email = document.getElementById('waitlistEmail').value.trim();
+            const name = document.getElementById('waitlistName').value.trim();
+            
+            // Validate email
+            if (!email) {
+                alert('Please enter your email address');
                 return;
             }
             
-            const priceId = selectedPlan === 'monthly' ? STRIPE_MONTHLY_PRICE_ID : STRIPE_YEARLY_PRICE_ID;
-            
-            try {
-                const response = await fetch('YOUR_BACKEND_URL/create-checkout-session', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        priceId: priceId,
-                        plan: selectedPlan
-                    }),
-                });
-                
-                const session = await response.json();
-                const result = await stripe.redirectToCheckout({
-                    sessionId: session.id,
-                });
-                
-                if (result.error) {
-                    alert(result.error.message);
-                }
-            } catch (error) {
-                console.error('Payment error:', error);
-                alert('Unable to process payment. Please try again later.');
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert('Please enter a valid email address');
+                return;
             }
+            
+            // Store waitlist data
+            const waitlistEntry = {
+                email: email,
+                name: name || 'Anonymous',
+                plan: selectedPlan,
+                timestamp: new Date().toISOString(),
+                planPrice: selectedPlan === 'monthly' ? '₹299/month' : '₹749/year'
+            };
+            
+            // In a real app, you would send this to your backend/database
+            // For now, we'll store it in memory and log it
+            waitlistData.push(waitlistEntry);
+            
+            console.log('=== NEW WAITLIST SIGNUP ===');
+            console.log('Email:', email);
+            console.log('Name:', name || 'Not provided');
+            console.log('Interested Plan:', selectedPlan === 'monthly' ? 'Monthly (₹299)' : 'Yearly (₹749)');
+            console.log('Total Waitlist:', waitlistData.length);
+            console.log('========================');
+            
+            // Show success message
+            alert(`🎉 You're on the waitlist!\n\nWe'll email you at ${email} when Selene Pro launches.\n\n💝 As an early supporter, you'll get 50% off!`);
+            
+            // Clear form
+            document.getElementById('waitlistEmail').value = '';
+            document.getElementById('waitlistName').value = '';
+            
+            // Close modal
+            document.getElementById('upgradeModal').style.display = 'none';
+            
+            // Optional: Send to Google Sheets or other service
+            // You can integrate this later when ready
         });
         
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('success') === 'true') {
-            alert('🎉 Welcome to Selene Pro! Your cosmic journey begins now.');
-        }
-        if (urlParams.get('canceled') === 'true') {
-            console.log('Payment canceled by user');
-        }
+        // Later, when you're ready to enable payments, replace the above with:
+        // Razorpay Integration (commented out for now)
+        /*
+        const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID_HERE';
+        const RAZORPAY_MONTHLY_PLAN_ID = 'plan_YOUR_MONTHLY_PLAN_ID';
+        const RAZORPAY_YEARLY_PLAN_ID = 'plan_YOUR_YEARLY_PLAN_ID';
+        
+        document.getElementById('checkoutBtn').addEventListener('click', async () => {
+            const planId = selectedPlan === 'monthly' ? RAZORPAY_MONTHLY_PLAN_ID : RAZORPAY_YEARLY_PLAN_ID;
+            const amount = selectedPlan === 'monthly' ? 29900 : 74900;
+            const planName = selectedPlan === 'monthly' ? 'Monthly' : 'Yearly';
+            
+            const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: amount,
+                currency: 'INR',
+                name: 'Selene Pro',
+                description: `${planName} Subscription`,
+                handler: function (response) {
+                    alert('🎉 Payment Successful! Welcome to Selene Pro!');
+                    document.getElementById('upgradeModal').style.display = 'none';
+                },
+                prefill: { name: '', email: '', contact: '' },
+                theme: { color: '#667eea' }
+            };
+            
+            const rzp = new Razorpay(options);
+            rzp.open();
+        });
+        */
     </script>
 </body>
 </html>
