@@ -166,59 +166,6 @@
             letter-spacing: 2px;
         }
 
-        .controls {
-            display: flex;
-            gap: 1.5rem;
-            margin-top: 3rem;
-        }
-
-        .control-btn {
-            padding: 1.2rem 3rem;
-            font-size: 1.1rem;
-            border: 2px solid #a8c0ff;
-            background: rgba(168, 192, 255, 0.15);
-            color: white;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            letter-spacing: 2px;
-            backdrop-filter: blur(10px);
-            font-weight: 500;
-        }
-
-        .control-btn:hover {
-            background: rgba(168, 192, 255, 0.3);
-            box-shadow: 0 0 20px rgba(168, 192, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        .control-btn:active {
-            transform: translateY(0);
-        }
-
-        button {
-            padding: 1rem 2rem;
-            font-size: 1rem;
-            border: 2px solid #a8c0ff;
-            background: rgba(168, 192, 255, 0.1);
-            color: white;
-            cursor: pointer;
-            border-radius: 50px;
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-            backdrop-filter: blur(10px);
-        }
-
-        button:hover {
-            background: rgba(168, 192, 255, 0.3);
-            box-shadow: 0 0 20px rgba(168, 192, 255, 0.5);
-            transform: translateY(-2px);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
         .upgrade-section {
             position: fixed;
             bottom: 1.5rem;
@@ -274,7 +221,7 @@
             background: linear-gradient(135deg, #1a0033 0%, #2d0a4e 100%);
             padding: 2rem;
             border-radius: 20px;
-            max-width: 500px;
+            max-width: 550px;
             width: 90%;
             margin: 1rem;
             border: 2px solid #a8c0ff;
@@ -284,58 +231,91 @@
             position: relative;
         }
 
-        .loading-spinner {
-            display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50px;
-            height: 50px;
-            border: 4px solid rgba(168, 192, 255, 0.3);
-            border-top: 4px solid #a8c0ff;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-            z-index: 10;
-        }
-
-        @keyframes spin {
-            0% { transform: translate(-50%, -50%) rotate(0deg); }
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
-        }
-
-        .payment-processing {
-            display: none;
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(26, 0, 51, 0.95);
-            border-radius: 20px;
-            z-index: 9;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-        }
-
-        .payment-processing p {
-            margin-top: 2rem;
-            color: #a8c0ff;
-            font-size: 1.2rem;
-        }
-
         .modal h2 {
             font-size: 2rem;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             background: linear-gradient(to right, #a8c0ff, #c471ed);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-align: center;
         }
 
-        .modal p {
+        .modal-subtitle {
             color: #e0e0ff;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-header {
+            color: #c471ed;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .pricing-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .price-card {
+            background: rgba(168, 192, 255, 0.08);
+            border: 2px solid rgba(168, 192, 255, 0.3);
+            border-radius: 15px;
+            padding: 1.5rem 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            position: relative;
+        }
+
+        .price-card:hover {
+            border-color: #a8c0ff;
+            background: rgba(168, 192, 255, 0.15);
+        }
+
+        .price-card.active {
+            border-color: #c471ed;
+            background: rgba(196, 113, 237, 0.2);
+            box-shadow: 0 0 25px rgba(196, 113, 237, 0.4);
+        }
+
+        .best-value {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .price-amount {
+            font-size: 2.5rem;
+            color: #e0e0ff;
+            font-weight: bold;
+            line-height: 1;
+            margin: 0.5rem 0;
+        }
+
+        .price-period {
+            color: #a8c0ff;
+            font-size: 0.95rem;
+        }
+
+        .price-savings {
+            color: #4ade80;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            font-weight: 600;
         }
 
         .features {
@@ -344,13 +324,48 @@
         }
 
         .features li {
-            padding: 1rem;
-            margin: 0.5rem 0;
+            padding: 0.8rem;
+            margin: 0.4rem 0;
             background: rgba(168, 192, 255, 0.1);
             border-radius: 10px;
             border-left: 4px solid #c471ed;
             color: #e0e0ff;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
+        }
+
+        .payment-info {
+            background: rgba(168, 192, 255, 0.15);
+            padding: 1rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            border-left: 4px solid #c471ed;
+        }
+
+        .payment-info p {
+            color: #e0e0ff;
+            margin: 0;
+            font-size: 0.9rem;
+        }
+
+        .subscribe-btn {
+            width: 100%;
+            padding: 1.2rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-top: 1rem;
+        }
+
+        .subscribe-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
         }
 
         .close-btn {
@@ -363,25 +378,11 @@
             border-radius: 50px;
             cursor: pointer;
             transition: all 0.3s ease;
+            font-size: 0.95rem;
         }
 
         .close-btn:hover {
             background: rgba(255, 255, 255, 0.25);
-        }
-
-        @media (max-width: 768px) {
-            .modal-content {
-                padding: 1.5rem;
-            }
-
-            .modal h2 {
-                font-size: 1.5rem;
-            }
-
-            .features li {
-                padding: 0.8rem;
-                font-size: 0.85rem;
-            }
         }
 
         .sound-toggle {
@@ -411,9 +412,38 @@
                 padding: 0.5rem 0.8rem;
                 font-size: 0.75rem;
             }
+
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .modal h2 {
+                font-size: 1.5rem;
+            }
+
+            .pricing-container {
+                gap: 0.8rem;
+            }
+
+            .price-card {
+                padding: 1.2rem 0.8rem;
+            }
+
+            .price-amount {
+                font-size: 2rem;
+            }
+
+            .features li {
+                padding: 0.7rem;
+                font-size: 0.85rem;
+            }
         }
 
-
+        @media (max-width: 400px) {
+            .pricing-container {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
@@ -482,7 +512,7 @@
             </div>
             
             <button class="upgrade-btn" style="font-size: 1.2rem; padding: 1.2rem 3rem; margin-bottom: 3rem;" onclick="document.getElementById('upgradeModal').style.display='flex'">
-                ✨ Get Selene Pro - $4.99/month
+                ✨ Get Selene Pro - Starting at $4/month
             </button>
         </div>
     </div>
@@ -494,16 +524,43 @@
     <div class="modal" id="upgradeModal">
         <div class="modal-content">
             <h2>Selene Pro</h2>
-            <p style="color: #a8c0ff; margin-bottom: 2rem;">Unlock the cosmos and elevate your focus</p>
+            <p class="modal-subtitle">Unlock the cosmos and elevate your focus</p>
+            
+            <h3 class="plan-header">Choose Your Plan</h3>
+            
+            <div class="pricing-container">
+                <div class="price-card active" id="monthlyCard">
+                    <div class="price-amount">$4</div>
+                    <div class="price-period">per month</div>
+                </div>
+                
+                <div class="price-card" id="yearlyCard">
+                    <div class="best-value">BEST VALUE</div>
+                    <div class="price-amount">$10</div>
+                    <div class="price-period">per year</div>
+                    <div class="price-savings">Save $38 (79%)</div>
+                </div>
+            </div>
+            
             <ul class="features">
-                <li>🌌 10+ Premium Nebula Backgrounds (Crab, Orion, Eagle & more)</li>
-                <li>✨ Exclusive Galaxy Themes (Andromeda, Whirlpool, Sombrero)</li>
-                <li>🎵 Celestial Sound Library (Pulsar rhythms, cosmic winds, stellar harmonics)</li>
+                <li>🌌 10+ Premium Nebula Backgrounds</li>
+                <li>✨ Exclusive Galaxy Themes</li>
+                <li>🎵 Celestial Sound Library</li>
                 <li>🌠 Shooting Star Animations</li>
                 <li>📊 Advanced Focus Analytics</li>
                 <li>🎨 Customizable Moon Textures</li>
             </ul>
-            <button class="upgrade-btn" style="width: 100%; margin-top: 1rem;">Get Pro - $4.99/month</button>
+            
+            <div class="payment-info">
+                <p>
+                    💳 <strong>Secure Payment via Stripe</strong><br>
+                    Cancel anytime • 7-day money-back guarantee
+                </p>
+            </div>
+            
+            <button class="subscribe-btn" id="checkoutBtn">
+                <span id="btnText">Subscribe Now - $4/month</span>
+            </button>
             <button class="close-btn" id="closeModal">Maybe Later</button>
         </div>
     </div>
@@ -598,21 +655,16 @@
             const seconds = timeInSeconds % 60;
             timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-            // Calculate progress from 0 (start) to 1 (end)
             const progress = (totalTime - timeInSeconds) / totalTime;
             
-            // Determine moon phase based on progress (0-4 index)
             let phaseIndex = Math.floor(progress * 4);
             if (phaseIndex >= 4) phaseIndex = 4;
             
             phase.textContent = `${phases[phaseIndex]} - Cycle ${currentCycle}/4`;
 
-            // Moon grows from 0% to 100% visibility
-            // Shadow opacity goes from 1 (completely dark) to 0 (fully visible)
             const shadowOpacity = 1 - progress;
             moonShadow.style.opacity = shadowOpacity;
             
-            // Moon brightness increases as it grows
             const brightness = 0.5 + (progress * 0.5);
             moon.style.filter = `brightness(${brightness})`;
         }
@@ -631,18 +683,15 @@
             isRunning = false;
             clearInterval(interval);
             
-            // Move to next cycle
             if (currentCycle < 4) {
                 currentCycle++;
             } else {
                 currentCycle = 1;
             }
             
-            // Reset for next cycle
             timeInSeconds = totalTime;
             updateDisplay();
             
-            // Celebration animation
             moon.style.animation = 'pulse 1s ease-in-out 3';
             setTimeout(() => {
                 moon.style.animation = '';
@@ -651,13 +700,11 @@
 
         moonContainer.addEventListener('click', () => {
             if (!isRunning) {
-                // Start timer
                 initAudio();
                 playAmbientSound();
                 isRunning = true;
                 interval = setInterval(tick, 1000);
             } else {
-                // Stop and reset timer
                 isRunning = false;
                 clearInterval(interval);
                 timeInSeconds = totalTime;
@@ -681,19 +728,44 @@
         });
 
         updateDisplay();
-    </script>
-    
-    <!-- Stripe Payment Integration -->
-    <script>
-        // ⚠️ IMPORTANT: Replace with your actual Stripe Publishable Key
-        // Get this from: https://dashboard.stripe.com/apikeys
-        const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE'; // TODO: Replace this!
+
+        // Pricing selection
+        let selectedPlan = 'monthly';
         
-        // ⚠️ IMPORTANT: Replace with your Stripe Price ID for the $4.99/month subscription
-        // Create this in: https://dashboard.stripe.com/products
-        const STRIPE_PRICE_ID = 'price_YOUR_PRICE_ID_HERE'; // TODO: Replace this!
+        function selectPlan(plan) {
+            selectedPlan = plan;
+            const monthlyCard = document.getElementById('monthlyCard');
+            const yearlyCard = document.getElementById('yearlyCard');
+            const btnText = document.getElementById('btnText');
+            
+            if (plan === 'monthly') {
+                monthlyCard.classList.add('active');
+                yearlyCard.classList.remove('active');
+                btnText.textContent = 'Subscribe Now - $4/month';
+            } else {
+                yearlyCard.classList.add('active');
+                monthlyCard.classList.remove('active');
+                btnText.textContent = 'Subscribe Now - $10/year';
+            }
+        }
         
-        // Initialize Stripe
+        // Add click listeners after modal content is loaded
+        setTimeout(() => {
+            const monthlyCard = document.getElementById('monthlyCard');
+            const yearlyCard = document.getElementById('yearlyCard');
+            
+            if (monthlyCard && yearlyCard) {
+                monthlyCard.addEventListener('click', () => selectPlan('monthly'));
+                yearlyCard.addEventListener('click', () => selectPlan('yearly'));
+                console.log('Pricing cards initialized successfully');
+            }
+        }, 100);
+
+        // Stripe Integration
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE';
+        const STRIPE_MONTHLY_PRICE_ID = 'price_YOUR_MONTHLY_PRICE_ID_HERE';
+        const STRIPE_YEARLY_PRICE_ID = 'price_YOUR_YEARLY_PRICE_ID_HERE';
+        
         let stripe;
         try {
             stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
@@ -701,57 +773,45 @@
             console.error('Stripe initialization failed. Please add your Stripe keys.');
         }
         
-        // Handle checkout button click
         document.getElementById('checkoutBtn').addEventListener('click', async () => {
             if (!stripe) {
                 alert('Payment system is being configured. Please check back soon!');
                 return;
             }
             
-            // Show loading state
-            const processingDiv = document.querySelector('.payment-processing');
-            processingDiv.style.display = 'flex';
+            const priceId = selectedPlan === 'monthly' ? STRIPE_MONTHLY_PRICE_ID : STRIPE_YEARLY_PRICE_ID;
             
             try {
-                // Create checkout session (you'll need a backend endpoint for this)
-                // For now, this is a placeholder - see setup instructions below
                 const response = await fetch('YOUR_BACKEND_URL/create-checkout-session', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        priceId: STRIPE_PRICE_ID,
+                        priceId: priceId,
+                        plan: selectedPlan
                     }),
                 });
                 
                 const session = await response.json();
-                
-                // Redirect to Stripe Checkout
                 const result = await stripe.redirectToCheckout({
                     sessionId: session.id,
                 });
                 
                 if (result.error) {
                     alert(result.error.message);
-                    processingDiv.style.display = 'none';
                 }
             } catch (error) {
                 console.error('Payment error:', error);
                 alert('Unable to process payment. Please try again later.');
-                processingDiv.style.display = 'none';
             }
         });
         
-        // Check if user is returning from successful payment
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get('success') === 'true') {
-            // Show success message
             alert('🎉 Welcome to Selene Pro! Your cosmic journey begins now.');
-            // You would unlock pro features here
         }
         if (urlParams.get('canceled') === 'true') {
-            // Payment was canceled
             console.log('Payment canceled by user');
         }
     </script>
