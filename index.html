@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selene - Lunar Pomodoro Timer</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+            overflow-y: auto;
+            min-height: 100vh;
+            background: #000;
+        }
+
+        .galaxy-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 100%);
+            z-index: 0;
+        }
+
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite, float 100s linear infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100px, -200px); }
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 1rem;
+            color: white;
+        }
+
+        .logo {
+            font-size: 3rem;
+            font-weight: 300;
+            letter-spacing: 8px;
+            margin-bottom: 0.5rem;
+            margin-top: 3rem;
+            background: linear-gradient(to right, #a8c0ff, #c471ed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 2.5rem;
+                letter-spacing: 6px;
+                margin-top: 3.5rem;
+            }
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            letter-spacing: 3px;
+            color: #a8c0ff;
+            margin-bottom: 3rem;
+            opacity: 0.8;
+        }
+
+        .moon-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 2rem 0;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .moon-container:hover {
+            transform: scale(1.05);
+        }
+
+        .moon-container:active {
+            transform: scale(0.98);
+        }
+
+        .moon {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #f0f0f0, #8a8a8a);
+            position: relative;
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.4),
+                        inset 0 0 40px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s ease;
+        }
+
+        .moon-shadow {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(ellipse at center, #1a0033 0%, transparent 100%);
+            transition: opacity 0.5s ease;
+        }
+
+        .glow {
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            width: 340px;
+            height: 340px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.5; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+
+        .timer-display {
+            font-size: 4rem;
+            font-weight: 300;
+            margin: 2rem 0 1rem;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+        }
+
+        .phase-display {
+            font-size: 1.2rem;
+            color: #c471ed;
+            margin-bottom: 2rem;
+            letter-spacing: 2px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        .control-btn {
+            padding: 1.2rem 3rem;
+            font-size: 1.1rem;
+            border: 2px solid #a8c0ff;
+            background: rgba(168, 192, 255, 0.15);
+            color: white;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            backdrop-filter: blur(10px);
+            font-weight: 500;
+        }
+
+        .control-btn:hover {
+            background: rgba(168, 192, 255, 0.3);
+            box-shadow: 0 0 20px rgba(168, 192, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .control-btn:active {
+            transform: translateY(0);
+        }
+
+        button {
+            padding: 1rem 2rem;
+            font-size: 1rem;
+            border: 2px solid #a8c0ff;
+            background: rgba(168, 192, 255, 0.1);
+            color: white;
+            cursor: pointer;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
+        }
+
+        button:hover {
+            background: rgba(168, 192, 255, 0.3);
+            box-shadow: 0 0 20px rgba(168, 192, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .upgrade-section {
+            position: fixed;
+            bottom: 1.5rem;
+            left: 1.5rem;
+            z-index: 3;
+        }
+
+        .upgrade-btn {
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        @media (max-width: 768px) {
+            .upgrade-section {
+                bottom: 1rem;
+                left: 1rem;
+            }
+            
+            .upgrade-btn {
+                padding: 0.8rem 1.5rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a0033 0%, #2d0a4e 100%);
+            padding: 2rem;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            margin: 1rem;
+            border: 2px solid #a8c0ff;
+            box-shadow: 0 0 50px rgba(168, 192, 255, 0.3);
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .loading-spinner {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 4px solid rgba(168, 192, 255, 0.3);
+            border-top: 4px solid #a8c0ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 10;
+        }
+
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .payment-processing {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(26, 0, 51, 0.95);
+            border-radius: 20px;
+            z-index: 9;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .payment-processing p {
+            margin-top: 2rem;
+            color: #a8c0ff;
+            font-size: 1.2rem;
+        }
+
+        .modal h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(to right, #a8c0ff, #c471ed);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .modal p {
+            color: #e0e0ff;
+        }
+
+        .features {
+            list-style: none;
+            margin: 1.5rem 0;
+        }
+
+        .features li {
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: rgba(168, 192, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #c471ed;
+            color: #e0e0ff;
+            font-size: 0.95rem;
+        }
+
+        .close-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid #a8c0ff;
+            padding: 0.8rem 1.5rem;
+            margin-top: 1rem;
+            color: #e0e0ff;
+            width: 100%;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .modal-content {
+                padding: 1.5rem;
+            }
+
+            .modal h2 {
+                font-size: 1.5rem;
+            }
+
+            .features li {
+                padding: 0.8rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        .sound-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 3;
+            background: rgba(168, 192, 255, 0.2);
+            border: 2px solid #a8c0ff;
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .sound-toggle:hover {
+            background: rgba(168, 192, 255, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .sound-toggle {
+                top: 0.5rem;
+                right: 0.5rem;
+                padding: 0.5rem 0.8rem;
+                font-size: 0.75rem;
+            }
+        }
+
+
+    </style>
+</head>
+<body>
+    <div class="galaxy-bg"></div>
+    <div class="stars" id="stars"></div>
+
+    <button class="sound-toggle" id="soundToggle">🔊 Sound: ON</button>
+
+    <div class="container">
+        <h1 class="logo">SELENE</h1>
+        <p class="subtitle">LUNAR POMODORO TIMER</p>
+
+        <div class="moon-container" id="moonContainer">
+            <div class="glow"></div>
+            <div class="moon" id="moon">
+                <div class="moon-shadow" id="moonShadow"></div>
+            </div>
+        </div>
+
+        <div class="timer-display" id="timer">30:00</div>
+        <div class="phase-display" id="phase">New Moon - Cycle 1/4</div>
+        <p style="color: #a8c0ff; opacity: 0.6; margin-top: 1rem; font-size: 0.9rem;">✨ Click the moon to start ✨</p>
+        
+        <!-- Pro Features Preview Section -->
+        <div style="margin-top: 4rem; text-align: center; max-width: 800px; padding: 0 1rem;">
+            <h3 style="color: #c471ed; font-size: 1.5rem; margin-bottom: 2rem; font-weight: 300; letter-spacing: 2px;">
+                ✨ Unlock Selene Pro ✨
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌌</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Premium Nebulas</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Explore the Crab, Orion, Eagle, and Ring Nebulas with stunning visuals</p>
+                </div>
+                
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌀</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Galaxy Themes</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Immerse yourself in Andromeda, Whirlpool, and Sombrero galaxies</p>
+                </div>
+                
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎵</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Celestial Sounds</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Pulsar rhythms, cosmic winds, and stellar harmonics to enhance focus</p>
+                </div>
+                
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌠</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Shooting Stars</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Beautiful meteor animations crossing your screen as you work</p>
+                </div>
+                
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Focus Analytics</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Track your productivity patterns and streaks over time</p>
+                </div>
+                
+                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎨</div>
+                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Custom Moons</h4>
+                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Choose from different moon textures and color schemes</p>
+                </div>
+            </div>
+            
+            <button class="upgrade-btn" style="font-size: 1.2rem; padding: 1.2rem 3rem; margin-bottom: 3rem;" onclick="document.getElementById('upgradeModal').style.display='flex'">
+                ✨ Get Selene Pro - $4.99/month
+            </button>
+        </div>
+    </div>
+
+    <div class="upgrade-section">
+        <button class="upgrade-btn" id="upgradeBtn">✨ UPGRADE TO PRO</button>
+    </div>
+
+    <div class="modal" id="upgradeModal">
+        <div class="modal-content">
+            <h2>Selene Pro</h2>
+            <p style="color: #a8c0ff; margin-bottom: 2rem;">Unlock the cosmos and elevate your focus</p>
+            <ul class="features">
+                <li>🌌 10+ Premium Nebula Backgrounds (Crab, Orion, Eagle & more)</li>
+                <li>✨ Exclusive Galaxy Themes (Andromeda, Whirlpool, Sombrero)</li>
+                <li>🎵 Celestial Sound Library (Pulsar rhythms, cosmic winds, stellar harmonics)</li>
+                <li>🌠 Shooting Star Animations</li>
+                <li>📊 Advanced Focus Analytics</li>
+                <li>🎨 Customizable Moon Textures</li>
+            </ul>
+            <button class="upgrade-btn" style="width: 100%; margin-top: 1rem;">Get Pro - $4.99/month</button>
+            <button class="close-btn" id="closeModal">Maybe Later</button>
+        </div>
+    </div>
+
+    <script>
+        // Create stars
+        const starsContainer = document.getElementById('stars');
+        for (let i = 0; i < 200; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 3;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.animationDuration = `twinkle ${Math.random() * 2 + 2}s infinite, float ${Math.random() * 50 + 80}s linear infinite`;
+            starsContainer.appendChild(star);
+        }
+
+        // Timer logic
+        let timeInSeconds = 30 * 60;
+        let totalTime = 30 * 60;
+        let isRunning = false;
+        let interval;
+        let currentCycle = 1;
+        let audioContext;
+        let oscillator;
+        let gainNode;
+        let soundEnabled = true;
+
+        const timer = document.getElementById('timer');
+        const phase = document.getElementById('phase');
+        const moon = document.getElementById('moon');
+        const moonShadow = document.getElementById('moonShadow');
+        const moonContainer = document.getElementById('moonContainer');
+        const upgradeBtn = document.getElementById('upgradeBtn');
+        const upgradeModal = document.getElementById('upgradeModal');
+        const closeModal = document.getElementById('closeModal');
+        const soundToggle = document.getElementById('soundToggle');
+
+        const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon'];
+
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playAmbientSound() {
+            if (!soundEnabled || !audioContext) return;
+            
+            if (oscillator) {
+                oscillator.stop();
+            }
+
+            oscillator = audioContext.createOscillator();
+            gainNode = audioContext.createGain();
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(110, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.start();
+        }
+
+        function stopAmbientSound() {
+            if (oscillator) {
+                oscillator.stop();
+                oscillator = null;
+            }
+        }
+
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+            
+            if (!soundEnabled) {
+                stopAmbientSound();
+            } else if (isRunning) {
+                initAudio();
+                playAmbientSound();
+            }
+        });
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeInSeconds / 60);
+            const seconds = timeInSeconds % 60;
+            timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+            // Calculate progress from 0 (start) to 1 (end)
+            const progress = (totalTime - timeInSeconds) / totalTime;
+            
+            // Determine moon phase based on progress (0-4 index)
+            let phaseIndex = Math.floor(progress * 4);
+            if (phaseIndex >= 4) phaseIndex = 4;
+            
+            phase.textContent = `${phases[phaseIndex]} - Cycle ${currentCycle}/4`;
+
+            // Moon grows from 0% to 100% visibility
+            // Shadow opacity goes from 1 (completely dark) to 0 (fully visible)
+            const shadowOpacity = 1 - progress;
+            moonShadow.style.opacity = shadowOpacity;
+            
+            // Moon brightness increases as it grows
+            const brightness = 0.5 + (progress * 0.5);
+            moon.style.filter = `brightness(${brightness})`;
+        }
+
+        function tick() {
+            if (timeInSeconds > 0) {
+                timeInSeconds--;
+                updateDisplay();
+            } else {
+                completePomodoro();
+            }
+        }
+
+        function completePomodoro() {
+            stopAmbientSound();
+            isRunning = false;
+            clearInterval(interval);
+            
+            // Move to next cycle
+            if (currentCycle < 4) {
+                currentCycle++;
+            } else {
+                currentCycle = 1;
+            }
+            
+            // Reset for next cycle
+            timeInSeconds = totalTime;
+            updateDisplay();
+            
+            // Celebration animation
+            moon.style.animation = 'pulse 1s ease-in-out 3';
+            setTimeout(() => {
+                moon.style.animation = '';
+            }, 3000);
+        }
+
+        moonContainer.addEventListener('click', () => {
+            if (!isRunning) {
+                // Start timer
+                initAudio();
+                playAmbientSound();
+                isRunning = true;
+                interval = setInterval(tick, 1000);
+            } else {
+                // Stop and reset timer
+                isRunning = false;
+                clearInterval(interval);
+                timeInSeconds = totalTime;
+                updateDisplay();
+                stopAmbientSound();
+            }
+        });
+
+        upgradeBtn.addEventListener('click', () => {
+            upgradeModal.style.display = 'flex';
+        });
+
+        closeModal.addEventListener('click', () => {
+            upgradeModal.style.display = 'none';
+        });
+
+        upgradeModal.addEventListener('click', (e) => {
+            if (e.target === upgradeModal) {
+                upgradeModal.style.display = 'none';
+            }
+        });
+
+        updateDisplay();
+    </script>
+    
+    <!-- Stripe Payment Integration -->
+    <script>
+        // ⚠️ IMPORTANT: Replace with your actual Stripe Publishable Key
+        // Get this from: https://dashboard.stripe.com/apikeys
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_KEY_HERE'; // TODO: Replace this!
+        
+        // ⚠️ IMPORTANT: Replace with your Stripe Price ID for the $4.99/month subscription
+        // Create this in: https://dashboard.stripe.com/products
+        const STRIPE_PRICE_ID = 'price_YOUR_PRICE_ID_HERE'; // TODO: Replace this!
+        
+        // Initialize Stripe
+        let stripe;
+        try {
+            stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+        } catch (error) {
+            console.error('Stripe initialization failed. Please add your Stripe keys.');
+        }
+        
+        // Handle checkout button click
+        document.getElementById('checkoutBtn').addEventListener('click', async () => {
+            if (!stripe) {
+                alert('Payment system is being configured. Please check back soon!');
+                return;
+            }
+            
+            // Show loading state
+            const processingDiv = document.querySelector('.payment-processing');
+            processingDiv.style.display = 'flex';
+            
+            try {
+                // Create checkout session (you'll need a backend endpoint for this)
+                // For now, this is a placeholder - see setup instructions below
+                const response = await fetch('YOUR_BACKEND_URL/create-checkout-session', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        priceId: STRIPE_PRICE_ID,
+                    }),
+                });
+                
+                const session = await response.json();
+                
+                // Redirect to Stripe Checkout
+                const result = await stripe.redirectToCheckout({
+                    sessionId: session.id,
+                });
+                
+                if (result.error) {
+                    alert(result.error.message);
+                    processingDiv.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Unable to process payment. Please try again later.');
+                processingDiv.style.display = 'none';
+            }
+        });
+        
+        // Check if user is returning from successful payment
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('success') === 'true') {
+            // Show success message
+            alert('🎉 Welcome to Selene Pro! Your cosmic journey begins now.');
+            // You would unlock pro features here
+        }
+        if (urlParams.get('canceled') === 'true') {
+            // Payment was canceled
+            console.log('Payment canceled by user');
+        }
+    </script>
+</body>
+</html>
