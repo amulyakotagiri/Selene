@@ -117,21 +117,52 @@
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            background: radial-gradient(circle at 30% 30%, #f0f0f0, #8a8a8a);
+            background: radial-gradient(circle at 35% 35%, #ffffff, #e8e8e8, #c0c0c0);
             position: relative;
-            box-shadow: 0 0 60px rgba(255, 255, 255, 0.4),
-                        inset 0 0 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 0 60px rgba(255, 255, 255, 0.6),
+                        inset -15px -15px 40px rgba(0, 0, 0, 0.2);
             transition: all 0.5s ease;
+            overflow: hidden;
+            opacity: 0;
+        }
+
+        .moon::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: rgba(180, 180, 180, 0.4);
+            border-radius: 50%;
+            top: 25%;
+            left: 30%;
+            box-shadow: 
+                50px 40px 0 -5px rgba(180, 180, 180, 0.3),
+                -20px 60px 0 -8px rgba(180, 180, 180, 0.25),
+                70px -10px 0 -3px rgba(180, 180, 180, 0.35);
         }
 
         .moon-shadow {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: #0a0015;
+            transition: transform 0.5s ease;
+            transform-origin: center;
+            z-index: 2;
+        }
+
+        .moon-overlay {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: radial-gradient(ellipse at center, #1a0033 0%, transparent 100%);
+            background: #0a0015;
+            z-index: 3;
             transition: opacity 0.5s ease;
         }
 
@@ -467,12 +498,26 @@
             <div class="glow"></div>
             <div class="moon" id="moon">
                 <div class="moon-shadow" id="moonShadow"></div>
+                <div class="moon-overlay" id="moonOverlay"></div>
             </div>
         </div>
 
-        <div class="timer-display" id="timer">30:00</div>
-        <div class="phase-display" id="phase">New Moon - Cycle 1/4</div>
+        <div class="timer-display" id="timer">25:00</div>
+        <div class="phase-display" id="phase">New Moon → Waxing Crescent - 🎯 Focus Time - Cycle 1/4</div>
         <p style="color: #a8c0ff; opacity: 0.6; margin-top: 1rem; font-size: 0.9rem;">✨ Click the moon to start ✨</p>
+        
+        <!-- Notification Permission Banner -->
+        <div id="notificationBanner" style="display: none; background: rgba(196, 113, 237, 0.2); border: 2px solid #c471ed; border-radius: 15px; padding: 1rem 1.5rem; margin-top: 1.5rem; max-width: 500px; text-align: center;">
+            <p style="color: #e0e0ff; margin-bottom: 0.8rem; font-size: 0.95rem;">
+                🔔 <strong>Enable notifications to get alerts when your timer ends!</strong>
+            </p>
+            <button id="enableNotifications" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 0.7rem 1.5rem; border-radius: 50px; color: white; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                Enable Notifications
+            </button>
+            <button id="dismissBanner" style="background: rgba(255, 255, 255, 0.1); border: 1px solid #a8c0ff; padding: 0.7rem 1.5rem; border-radius: 50px; color: #e0e0ff; cursor: pointer; font-size: 0.9rem; margin-left: 0.5rem;">
+                Maybe Later
+            </button>
+        </div>
         
         <!-- Pro Features Preview Section -->
         <div style="margin-top: 4rem; text-align: center; max-width: 800px; padding: 0 1rem;">
@@ -599,9 +644,10 @@
         }
 
         // Timer logic
-        let timeInSeconds = 30 * 60;
-        let totalTime = 30 * 60;
+        let timeInSeconds = 25 * 60; // 25 minutes work time
+        let totalTime = 25 * 60;
         let isRunning = false;
+        let isBreakTime = false;
         let interval;
         let currentCycle = 1;
         let audioContext;
@@ -613,6 +659,7 @@
         const phase = document.getElementById('phase');
         const moon = document.getElementById('moon');
         const moonShadow = document.getElementById('moonShadow');
+        const moonOverlay = document.getElementById('moonOverlay');
         const moonContainer = document.getElementById('moonContainer');
         const upgradeBtn = document.getElementById('upgradeBtn');
         const upgradeModal = document.getElementById('upgradeModal');
@@ -620,6 +667,71 @@
         const soundToggle = document.getElementById('soundToggle');
 
         const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon'];
+
+        // Show notification banner if permission not granted
+        window.addEventListener('load', () => {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    // Show the banner
+                    document.getElementById('notificationBanner').style.display = 'block';
+                } else if (Notification.permission === 'denied') {
+                    console.log('Notifications are blocked. User needs to enable them in browser settings.');
+                }
+            }
+        });
+
+        // Handle enable notifications button
+        document.getElementById('enableNotifications').addEventListener('click', async () => {
+            if ('Notification' in window) {
+                const permission = await Notification.requestPermission();
+                if (permission === 'granted') {
+                    document.getElementById('notificationBanner').style.display = 'none';
+                    // Show test notification
+                    showNotification(
+                        '🌙 Notifications Enabled!',
+                        'You\'ll now receive alerts when your Pomodoro sessions complete.'
+                    );
+                } else {
+                    alert('Please allow notifications in your browser settings to receive timer alerts.');
+                }
+            } else {
+                alert('Your browser doesn\'t support notifications.');
+            }
+        });
+
+        // Handle dismiss banner button
+        document.getElementById('dismissBanner').addEventListener('click', () => {
+            document.getElementById('notificationBanner').style.display = 'none';
+        });
+
+        // Request notification permission on page load
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        function showNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                const notification = new Notification(title, {
+                    body: body,
+                    icon: 'https://cdn-icons-png.flaticon.com/512/3159/3159310.png', // Moon icon
+                    badge: 'https://cdn-icons-png.flaticon.com/512/3159/3159310.png',
+                    tag: 'selene-timer',
+                    requireInteraction: true
+                });
+
+                // Play a sound with the notification
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUhELTKXh8bllHAU2jdXxz3goBS185vPTizgKEly47OulUxELTKXh8bllHAU2jdXxz3goBS185vPTizgKElw');
+                audio.play().catch(e => console.log('Audio play failed:', e));
+
+                notification.onclick = function() {
+                    window.focus();
+                    notification.close();
+                };
+            } else {
+                // Fallback alert if notifications aren't supported or denied
+                alert(title + '\n' + body);
+            }
+        }
 
         function initAudio() {
             if (!audioContext) {
@@ -634,24 +746,48 @@
                 oscillator.stop();
             }
 
+            // Create multiple oscillators for richer sound
             oscillator = audioContext.createOscillator();
+            const oscillator2 = audioContext.createOscillator();
             gainNode = audioContext.createGain();
             
+            // Main tone - deeper frequency
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(110, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
             
-            gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+            // Harmonic tone
+            oscillator2.type = 'sine';
+            oscillator2.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note (octave higher)
             
-            oscillator.connect(gainNode);
+            // Much louder gain
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1);
+            
+            // Add some filtering for warmth
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(800, audioContext.currentTime);
+            
+            oscillator.connect(filter);
+            oscillator2.connect(filter);
+            filter.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
             oscillator.start();
+            oscillator2.start();
+            
+            // Store second oscillator to stop it later
+            window.oscillator2 = oscillator2;
         }
 
         function stopAmbientSound() {
             if (oscillator) {
                 oscillator.stop();
                 oscillator = null;
+            }
+            if (window.oscillator2) {
+                window.oscillator2.stop();
+                window.oscillator2 = null;
             }
         }
 
@@ -672,18 +808,57 @@
             const seconds = timeInSeconds % 60;
             timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
+            // Calculate progress within current session (0 to 1)
             const progress = (totalTime - timeInSeconds) / totalTime;
             
-            let phaseIndex = Math.floor(progress * 4);
-            if (phaseIndex >= 4) phaseIndex = 4;
+            // Calculate overall moon phase based on completed cycles + current progress
+            // Each cycle = 25% of full moon growth
+            const completedCyclesProgress = (currentCycle - 1) * 0.25;
+            const currentCycleProgress = progress * 0.25;
+            const totalMoonProgress = completedCyclesProgress + currentCycleProgress;
             
-            phase.textContent = `${phases[phaseIndex]} - Cycle ${currentCycle}/4`;
+            // Determine phase name based on total progress
+            let phaseName;
+            if (totalMoonProgress < 0.25) {
+                phaseName = 'New Moon → Waxing Crescent';
+            } else if (totalMoonProgress < 0.5) {
+                phaseName = 'Waxing Crescent → First Quarter';
+            } else if (totalMoonProgress < 0.75) {
+                phaseName = 'First Quarter → Waxing Gibbous';
+            } else if (totalMoonProgress < 1.0) {
+                phaseName = 'Waxing Gibbous → Full Moon';
+            } else {
+                phaseName = '✨ Full Moon ✨';
+            }
+            
+            const sessionType = isBreakTime ? '☕ Break Time' : '🎯 Focus Time';
+            phase.textContent = `${phaseName} - ${sessionType} - Cycle ${currentCycle}/4`;
 
-            const shadowOpacity = 1 - progress;
-            moonShadow.style.opacity = shadowOpacity;
+            // Start with completely invisible moon (new moon = black)
+            // Gradually fade in the moon itself as it progresses
+            moon.style.opacity = Math.min(1, totalMoonProgress + 0.1);
             
-            const brightness = 0.5 + (progress * 0.5);
-            moon.style.filter = `brightness(${brightness})`;
+            // Dark overlay fades out to reveal the moon
+            // At 0%: overlay is fully visible (black moon)
+            // As progress increases: overlay fades revealing white crescent
+            moonOverlay.style.opacity = Math.max(0, 1 - (totalMoonProgress * 1.2));
+            
+            // Calculate how much of the moon should be visible (crescent shape)
+            const visiblePercent = totalMoonProgress * 100;
+            
+            // Move shadow from right to left as moon grows
+            // Creates the crescent/quarter/gibbous shapes
+            const shadowPosition = 100 - (visiblePercent * 2);
+            moonShadow.style.transform = `translateX(${shadowPosition}%)`;
+            
+            // Moon glow increases dramatically as it becomes fuller
+            const glowIntensity = 40 + (totalMoonProgress * 80);
+            const glowOpacity = 0.3 + (totalMoonProgress * 0.7);
+            moon.style.boxShadow = `
+                0 0 ${glowIntensity}px rgba(255, 255, 255, ${glowOpacity}),
+                0 0 ${glowIntensity * 1.5}px rgba(200, 200, 255, ${glowOpacity * 0.5}),
+                inset -15px -15px 40px rgba(0, 0, 0, ${0.2 - totalMoonProgress * 0.15})
+            `;
         }
 
         function tick() {
@@ -700,15 +875,59 @@
             isRunning = false;
             clearInterval(interval);
             
-            if (currentCycle < 4) {
-                currentCycle++;
+            if (!isBreakTime) {
+                // Just finished focus time, start break
+                const cyclePhase = currentCycle === 1 ? 'Waxing Crescent' : 
+                                 currentCycle === 2 ? 'First Quarter' :
+                                 currentCycle === 3 ? 'Waxing Gibbous' : 'Full Moon';
+                
+                showNotification(
+                    `🎉 Focus Session ${currentCycle} Complete!`,
+                    `Great work! Your moon grew to ${cyclePhase}. Time for a 5-minute break.`
+                );
+                
+                isBreakTime = true;
+                timeInSeconds = 5 * 60; // 5 minute break
+                totalTime = 5 * 60;
+                
+                // Auto-start break after 2 seconds
+                setTimeout(() => {
+                    if (!isRunning) {
+                        isRunning = true;
+                        initAudio();
+                        playAmbientSound();
+                        interval = setInterval(tick, 1000);
+                    }
+                }, 2000);
+                
             } else {
-                currentCycle = 1;
+                // Just finished break time, back to focus
+                showNotification(
+                    '☕ Break Time Over!',
+                    'Ready to focus again? Let\'s make this session count!'
+                );
+                
+                isBreakTime = false;
+                
+                // Move to next cycle after break
+                if (currentCycle < 4) {
+                    currentCycle++;
+                } else {
+                    // Completed all 4 cycles - moon is now FULL!
+                    showNotification(
+                        '🌕 FULL MOON ACHIEVED! 🌕',
+                        'Amazing! You completed all 4 Pomodoro cycles. Your moon is now fully illuminated! Take a longer break (15-30 min).'
+                    );
+                    currentCycle = 1; // Reset for next round
+                }
+                
+                timeInSeconds = 25 * 60; // Back to 25 minute focus
+                totalTime = 25 * 60;
             }
             
-            timeInSeconds = totalTime;
             updateDisplay();
             
+            // Celebration animation
             moon.style.animation = 'pulse 1s ease-in-out 3';
             setTimeout(() => {
                 moon.style.animation = '';
@@ -717,6 +936,11 @@
 
         moonContainer.addEventListener('click', () => {
             if (!isRunning) {
+                // Check if notifications are enabled, if not, show reminder
+                if ('Notification' in window && Notification.permission === 'default') {
+                    document.getElementById('notificationBanner').style.display = 'block';
+                }
+                
                 initAudio();
                 playAmbientSound();
                 isRunning = true;
@@ -724,7 +948,11 @@
             } else {
                 isRunning = false;
                 clearInterval(interval);
-                timeInSeconds = totalTime;
+                
+                // Reset to focus time
+                isBreakTime = false;
+                timeInSeconds = 25 * 60;
+                totalTime = 25 * 60;
                 updateDisplay();
                 stopAmbientSound();
             }
