@@ -654,6 +654,8 @@
         let oscillator;
         let gainNode;
         let soundEnabled = true;
+        let timerStartTime = null;
+        let timerEndTime = null;
 
         const timer = document.getElementById('timer');
         const phase = document.getElementById('phase');
@@ -808,6 +810,26 @@
             const seconds = timeInSeconds % 60;
             timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
+            // During break time, don't change moon phases - keep it as is
+            if (isBreakTime) {
+                const sessionType = '☕ Break Time';
+                const completedCyclesProgress = (currentCycle - 1) * 0.25;
+                
+                let phaseName;
+                if (completedCyclesProgress < 0.25) {
+                    phaseName = 'Waxing Crescent';
+                } else if (completedCyclesProgress < 0.5) {
+                    phaseName = 'First Quarter';
+                } else if (completedCyclesProgress < 0.75) {
+                    phaseName = 'Waxing Gibbous';
+                } else {
+                    phaseName = 'Full Moon';
+                }
+                
+                phase.textContent = `${phaseName} - ${sessionType} - Cycle ${currentCycle}/4`;
+                return; // Don't update moon visuals during break
+            }
+
             // Calculate progress within current session (0 to 1)
             const progress = (totalTime - timeInSeconds) / totalTime;
             
@@ -831,17 +853,17 @@
                 phaseName = '✨ Full Moon ✨';
             }
             
-            const sessionType = isBreakTime ? '☕ Break Time' : '🎯 Focus Time';
+            const sessionType = '🎯 Focus Time';
             phase.textContent = `${phaseName} - ${sessionType} - Cycle ${currentCycle}/4`;
 
             // Start with completely invisible moon (new moon = black)
             // Gradually fade in the moon itself as it progresses
-            moon.style.opacity = Math.min(1, totalMoonProgress + 0.1);
+            moon.style.opacity = Math.min(1, totalMoonProgress + 0.2);
             
             // Dark overlay fades out to reveal the moon
             // At 0%: overlay is fully visible (black moon)
             // As progress increases: overlay fades revealing white crescent
-            moonOverlay.style.opacity = Math.max(0, 1 - (totalMoonProgress * 1.2));
+            moonOverlay.style.opacity = Math.max(0, 1 - (totalMoonProgress * 2.5));
             
             // Calculate how much of the moon should be visible (crescent shape)
             const visiblePercent = totalMoonProgress * 100;
@@ -862,18 +884,77 @@
         }
 
         function tick() {
-            if (timeInSeconds > 0) {
-                timeInSeconds--;
+            if (!isRunning || !timerEndTime) return;
+            
+            // Calculate remaining time based on actual clock time
+            const now = Date.now();
+            const remainingMs = timerEndTime - now;
+            
+            if (remainingMs <= 0) {
+                // Timer completed
+                timeInSeconds = 0;
                 updateDisplay();
-            } else {
                 completePomodoro();
+            } else {
+                // Update display with accurate time
+                timeInSeconds = Math.ceil(remainingMs / 1000);
+                updateDisplay();
             }
         }
+
+        function startTimer() {
+            if (!isRunning) {
+                // Calculate end time based on current time
+                timerStartTime = Date.now();
+                timerEndTime = timerStartTime + (timeInSeconds * 1000);
+                
+                initAudio();
+                playAmbientSound();
+                isRunning = true;
+                
+                // Use both setInterval and check on visibility change
+                interval = setInterval(tick, 1000);
+                tick(); // Immediate update
+            }
+        }
+
+        function stopTimer() {
+            isRunning = false;
+            clearInterval(interval);
+            timerStartTime = null;
+            timerEndTime = null;
+            stopAmbientSound();
+        }
+
+        function resetTimer() {
+            stopTimer();
+            isBreakTime = false;
+            timeInSeconds = 25 * 60;
+            totalTime = 25 * 60;
+            updateDisplay();
+        }
+
+        // Handle visibility change - update timer when tab becomes visible
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden && isRunning) {
+                // Tab is now visible, recalculate time
+                tick();
+            }
+        });
+
+        // Also check periodically with Page Visibility API
+        setInterval(function() {
+            if (isRunning && !document.hidden) {
+                tick();
+            }
+        }, 500);
 
         function completePomodoro() {
             stopAmbientSound();
             isRunning = false;
             clearInterval(interval);
+            timerStartTime = null;
+            timerEndTime = null;
             
             if (!isBreakTime) {
                 // Just finished focus time, start break
@@ -889,19 +970,17 @@
                 isBreakTime = true;
                 timeInSeconds = 5 * 60; // 5 minute break
                 totalTime = 5 * 60;
+                updateDisplay(); // Update to show break status
                 
                 // Auto-start break after 2 seconds
                 setTimeout(() => {
                     if (!isRunning) {
-                        isRunning = true;
-                        initAudio();
-                        playAmbientSound();
-                        interval = setInterval(tick, 1000);
+                        startTimer();
                     }
                 }, 2000);
                 
             } else {
-                // Just finished break time, back to focus
+                // Just finished break time, move to next cycle
                 showNotification(
                     '☕ Break Time Over!',
                     'Ready to focus again? Let\'s make this session count!'
@@ -909,23 +988,24 @@
                 
                 isBreakTime = false;
                 
-                // Move to next cycle after break
-                if (currentCycle < 4) {
-                    currentCycle++;
-                } else {
+                // Check if we completed all 4 cycles
+                if (currentCycle >= 4) {
                     // Completed all 4 cycles - moon is now FULL!
                     showNotification(
                         '🌕 FULL MOON ACHIEVED! 🌕',
                         'Amazing! You completed all 4 Pomodoro cycles. Your moon is now fully illuminated! Take a longer break (15-30 min).'
                     );
-                    currentCycle = 1; // Reset for next round
+                    // Don't increment cycle, let it stay at 4 to show full moon
+                    // User will need to reset manually
+                } else {
+                    // Move to next cycle
+                    currentCycle++;
                 }
                 
                 timeInSeconds = 25 * 60; // Back to 25 minute focus
                 totalTime = 25 * 60;
+                updateDisplay(); // Update to show new cycle
             }
-            
-            updateDisplay();
             
             // Celebration animation
             moon.style.animation = 'pulse 1s ease-in-out 3';
@@ -941,20 +1021,9 @@
                     document.getElementById('notificationBanner').style.display = 'block';
                 }
                 
-                initAudio();
-                playAmbientSound();
-                isRunning = true;
-                interval = setInterval(tick, 1000);
+                startTimer();
             } else {
-                isRunning = false;
-                clearInterval(interval);
-                
-                // Reset to focus time
-                isBreakTime = false;
-                timeInSeconds = 25 * 60;
-                totalTime = 25 * 60;
-                updateDisplay();
-                stopAmbientSound();
+                resetTimer();
             }
         });
 
