@@ -644,8 +644,8 @@
             starsContainer.appendChild(star);
         }
 
-        // Timer logic
-        let timeInSeconds = 25 * 60; // 25 minutes work time
+        // Timer logic with localStorage persistence
+        let timeInSeconds = 25 * 60;
         let totalTime = 25 * 60;
         let isRunning = false;
         let isBreakTime = false;
@@ -657,6 +657,65 @@
         let soundEnabled = true;
         let timerStartTime = null;
         let timerEndTime = null;
+        let checkInterval = null;
+
+        // Save timer state to localStorage
+        function saveTimerState() {
+            const state = {
+                isRunning,
+                isBreakTime,
+                currentCycle,
+                timerEndTime,
+                timeInSeconds,
+                totalTime,
+                savedAt: Date.now()
+            };
+            localStorage.setItem('seleneTimerState', JSON.stringify(state));
+        }
+
+        // Load timer state from localStorage
+        function loadTimerState() {
+            const saved = localStorage.getItem('seleneTimerState');
+            if (!saved) return false;
+            
+            try {
+                const state = JSON.parse(saved);
+                
+                // Check if timer was running
+                if (state.isRunning && state.timerEndTime) {
+                    const now = Date.now();
+                    const remainingMs = state.timerEndTime - now;
+                    
+                    if (remainingMs > 0) {
+                        // Timer is still running
+                        isRunning = true;
+                        isBreakTime = state.isBreakTime;
+                        currentCycle = state.currentCycle;
+                        timerEndTime = state.timerEndTime;
+                        timeInSeconds = Math.ceil(remainingMs / 1000);
+                        totalTime = state.totalTime;
+                        
+                        console.log('Restored running timer:', {
+                            remaining: timeInSeconds + 's',
+                            isBreak: isBreakTime,
+                            cycle: currentCycle
+                        });
+                        
+                        startTimer(true); // Resume without resetting endTime
+                        return true;
+                    } else {
+                        // Timer expired while in background
+                        console.log('Timer expired in background');
+                        timeInSeconds = 0;
+                        completePomodoro();
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to load timer state:', e);
+            }
+            return false;
+        }
 
         const timer = document.getElementById('timer');
         const phase = document.getElementById('phase');
@@ -930,32 +989,51 @@
             // Update display with accurate time
             timeInSeconds = Math.ceil(remainingMs / 1000);
             updateDisplay();
+            saveTimerState(); // Save state every tick
         }
 
-        function startTimer() {
-            // Calculate end time based on current time
-            timerStartTime = Date.now();
-            timerEndTime = timerStartTime + (timeInSeconds * 1000);
+        function startTimer(isResuming = false) {
+            // If not resuming, calculate new end time
+            if (!isResuming) {
+                timerStartTime = Date.now();
+                timerEndTime = timerStartTime + (timeInSeconds * 1000);
+            }
             
             console.log('Starting timer:', {
                 duration: timeInSeconds + 's',
                 endTime: new Date(timerEndTime).toLocaleTimeString(),
                 isBreak: isBreakTime,
-                cycle: currentCycle
+                cycle: currentCycle,
+                isResuming
             });
             
             initAudio();
             playAmbientSound();
             isRunning = true;
             
-            // Clear any existing interval
-            if (interval) {
-                clearInterval(interval);
-            }
+            // Clear any existing intervals
+            if (interval) clearInterval(interval);
+            if (checkInterval) clearInterval(checkInterval);
             
-            // Use both setInterval and check on visibility change
+            // Primary timer update (every second)
             interval = setInterval(tick, 1000);
+            
+            // Aggressive checking (every 100ms) to catch wake-ups
+            checkInterval = setInterval(() => {
+                if (isRunning && timerEndTime) {
+                    const now = Date.now();
+                    const remainingMs = timerEndTime - now;
+                    
+                    if (remainingMs <= 0 && timeInSeconds > 0) {
+                        // Timer expired, trigger completion
+                        console.log('Timer expired (detected by check interval)');
+                        tick();
+                    }
+                }
+            }, 100);
+            
             tick(); // Immediate update
+            saveTimerState();
         }
 
         function stopTimer() {
@@ -964,9 +1042,14 @@
                 clearInterval(interval);
                 interval = null;
             }
+            if (checkInterval) {
+                clearInterval(checkInterval);
+                checkInterval = null;
+            }
             timerStartTime = null;
             timerEndTime = null;
             stopAmbientSound();
+            saveTimerState();
         }
 
         function resetTimer() {
@@ -977,25 +1060,76 @@
             timeInSeconds = 25 * 60;
             totalTime = 25 * 60;
             updateDisplay();
+            localStorage.removeItem('seleneTimerState');
         }
 
-        // Handle visibility change - update timer when tab becomes visible
+        // Handle visibility change - restore timer when tab becomes visible
         document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && isRunning) {
-                // Tab is now visible, recalculate time
-                tick();
+            console.log('Visibility changed:', document.hidden ? 'hidden' : 'visible');
+            
+            if (!document.hidden) {
+                // Tab is now visible
+                if (isRunning && timerEndTime) {
+                    // Force recalculation
+                    tick();
+                } else {
+                    // Try to restore from localStorage
+                    loadTimerState();
+                }
             }
         });
 
-        // Also check periodically with Page Visibility API
+        // Check on page load
+        window.addEventListener('load', function() {
+            console.log('Page loaded, checking for saved timer state');
+            loadTimerState();
+        });
+
+        // Periodic aggressive check (every 500ms)
         setInterval(function() {
-            if (isRunning && !document.hidden) {
-                tick();
+            if (isRunning && !document.hidden && timerEndTime) {
+                const now = Date.now();
+                const remainingMs = timerEndTime - now;
+                
+                // If there's a big discrepancy, force update
+                const displayedSeconds = timeInSeconds;
+                const actualSeconds = Math.ceil(remainingMs / 1000);
+                
+                if (Math.abs(displayedSeconds - actualSeconds) > 2) {
+                    console.log('Timer discrepancy detected, forcing update');
+                    tick();
+                }
             }
         }, 500);
 
+        // Wake lock API for mobile (keeps timer running)
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('Wake lock acquired');
+                    
+                    wakeLock.addEventListener('release', () => {
+                        console.log('Wake lock released');
+                    });
+                }
+            } catch (err) {
+                console.log('Wake lock error:', err);
+            }
+        }
+
+        function releaseWakeLock() {
+            if (wakeLock) {
+                wakeLock.release();
+                wakeLock = null;
+            }
+        }
+
         function completePomodoro() {
             console.log('Pomodoro complete!', { isBreak: isBreakTime, cycle: currentCycle });
+            
+            releaseWakeLock(); // Release wake lock when timer completes
             
             stopAmbientSound();
             isRunning = false;
@@ -1003,8 +1137,13 @@
                 clearInterval(interval);
                 interval = null;
             }
+            if (checkInterval) {
+                clearInterval(checkInterval);
+                checkInterval = null;
+            }
             timerStartTime = null;
             timerEndTime = null;
+            saveTimerState();
             
             if (!isBreakTime) {
                 // Just finished focus time, prepare for break
@@ -1075,8 +1214,12 @@
                     document.getElementById('notificationBanner').style.display = 'block';
                 }
                 
+                // Request wake lock on mobile
+                requestWakeLock();
+                
                 startTimer();
             } else {
+                releaseWakeLock();
                 resetTimer();
             }
         });
