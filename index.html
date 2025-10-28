@@ -1,15 +1,4 @@
-// Update page title with timer
-        function updatePageTitle() {
-            if (isRunning && timeInSeconds > 0) {
-                const minutes = Math.floor(timeInSeconds / 60);
-                const seconds = timeInSeconds % 60;
-                const timeStr = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-                const icon = isBreakTime ? '☕' : '🎯';
-                document.title = `${icon} ${timeStr} - Selene`;
-            } else {
-                document.title = 'Selene - Lunar Pomodoro Timer';
-            }
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -39,8 +28,27 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(ellipse at center, #1a0033 0%, #000000 100%);
+            background: radial-gradient(ellipse at center, #2a0a4e 0%, #1a0033 50%, #000000 100%);
             z-index: 0;
+        }
+
+        .galaxy-bg::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(ellipse at 20% 30%, rgba(168, 192, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 70%, rgba(196, 113, 237, 0.12) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+            animation: shimmer 10s ease-in-out infinite;
+        }
+
+        @keyframes shimmer {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
         }
 
         .stars {
@@ -50,14 +58,17 @@
             width: 100%;
             height: 100%;
             z-index: 1;
+            pointer-events: none;
         }
 
         .star {
             position: absolute;
             background: white;
             border-radius: 50%;
+            box-shadow: 0 0 2px rgba(255, 255, 255, 0.8);
             animation: twinkle 3s infinite, float 100s linear infinite;
             transition: transform 0.3s ease-out;
+            pointer-events: auto;
         }
 
         @keyframes twinkle {
@@ -94,14 +105,6 @@
             background-clip: text;
         }
 
-        @media (max-width: 768px) {
-            .logo {
-                font-size: 2.5rem;
-                letter-spacing: 6px;
-                margin-top: 3.5rem;
-            }
-        }
-
         .subtitle {
             font-size: 1rem;
             letter-spacing: 3px;
@@ -131,27 +134,27 @@
             width: 300px;
             height: 300px;
             border-radius: 50%;
-            background: radial-gradient(circle at 35% 35%, #ffffff, #ffffff, #f5f5f5);
+            background: radial-gradient(circle at 35% 35%, #ffffff, #ffffff, #fafafa);
             position: relative;
-            box-shadow: 0 0 60px rgba(255, 255, 255, 0.6),
-                        inset -15px -15px 40px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 40px rgba(255, 255, 255, 0.6);
             transition: all 0.5s ease;
             overflow: hidden;
+            filter: brightness(1.3);
         }
 
         .moon::before {
             content: '';
             position: absolute;
-            width: 30px;
-            height: 30px;
-            background: rgba(200, 200, 200, 0.3);
+            width: 25px;
+            height: 25px;
+            background: rgba(230, 230, 230, 0.3);
             border-radius: 50%;
-            top: 25%;
-            left: 30%;
+            top: 28%;
+            left: 32%;
             box-shadow: 
-                50px 40px 0 -5px rgba(200, 200, 200, 0.25),
-                -20px 60px 0 -8px rgba(200, 200, 200, 0.2),
-                70px -10px 0 -3px rgba(200, 200, 200, 0.28);
+                45px 35px 0 -4px rgba(230, 230, 230, 0.25),
+                -18px 55px 0 -6px rgba(230, 230, 230, 0.2),
+                65px -8px 0 -2px rgba(230, 230, 230, 0.28);
         }
 
         .moon-shadow {
@@ -165,7 +168,7 @@
             transform-origin: right center;
             z-index: 2;
             border-radius: 50%;
-            transform: translateX(0%) scaleX(1);
+            transform: translateX(0%) scaleX(1.5);
         }
 
         .moon-overlay {
@@ -208,8 +211,61 @@
         .phase-display {
             font-size: 1.2rem;
             color: #c471ed;
-            margin-bottom: 2rem;
+            margin-bottom: 1rem;
             letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .sound-toggle {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 3;
+            background: rgba(168, 192, 255, 0.2);
+            border: 2px solid #a8c0ff;
+            padding: 0.6rem 1rem;
+            border-radius: 50px;
+            color: white;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            font-size: 0.85rem;
+        }
+
+        .frequency-selector {
+            position: fixed;
+            top: 4rem;
+            right: 1rem;
+            z-index: 3;
+            background: rgba(168, 192, 255, 0.2);
+            border: 2px solid #a8c0ff;
+            padding: 0.8rem 1rem;
+            border-radius: 15px;
+            color: white;
+            backdrop-filter: blur(10px);
+            font-size: 0.85rem;
+        }
+
+        .frequency-selector select {
+            background: rgba(168, 192, 255, 0.3);
+            border: 1px solid #a8c0ff;
+            color: white;
+            padding: 0.5rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+
+        .frequency-selector select option {
+            background: #1a0033;
         }
 
         .upgrade-section {
@@ -238,18 +294,6 @@
             box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
         }
 
-        @media (max-width: 768px) {
-            .upgrade-section {
-                bottom: 1rem;
-                left: 1rem;
-            }
-            
-            .upgrade-btn {
-                padding: 0.8rem 1.5rem;
-                font-size: 0.9rem;
-            }
-        }
-
         .modal {
             display: none;
             position: fixed;
@@ -274,7 +318,6 @@
             box-shadow: 0 0 50px rgba(168, 192, 255, 0.3);
             max-height: 90vh;
             overflow-y: auto;
-            position: relative;
         }
 
         .modal h2 {
@@ -287,25 +330,11 @@
             text-align: center;
         }
 
-        .modal-subtitle {
-            color: #e0e0ff;
-            text-align: center;
-            margin-bottom: 1.5rem;
-        }
-
-        .plan-header {
-            color: #c471ed;
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            text-align: center;
-            font-weight: 500;
-        }
-
         .pricing-container {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin: 1.5rem 0;
         }
 
         .price-card {
@@ -317,108 +346,18 @@
             transition: all 0.3s ease;
             text-align: center;
             position: relative;
-            user-select: none;
-        }
-
-        .price-card:hover {
-            border-color: #a8c0ff;
-            background: rgba(168, 192, 255, 0.15);
-            transform: translateY(-2px);
-        }
-
-        .price-card:active {
-            transform: translateY(0);
         }
 
         .price-card.active {
             border-color: #c471ed;
             background: rgba(196, 113, 237, 0.2);
             box-shadow: 0 0 25px rgba(196, 113, 237, 0.4);
-            transform: scale(1.02);
-        }
-
-        .best-value {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            white-space: nowrap;
         }
 
         .price-amount {
             font-size: 2.5rem;
             color: #e0e0ff;
             font-weight: bold;
-            line-height: 1;
-            margin: 0.5rem 0;
-        }
-
-        .price-period {
-            color: #a8c0ff;
-            font-size: 0.95rem;
-        }
-
-        .price-savings {
-            color: #4ade80;
-            font-size: 0.8rem;
-            margin-top: 0.5rem;
-            font-weight: 600;
-        }
-
-        .features {
-            list-style: none;
-            margin: 1.5rem 0;
-        }
-
-        .features li {
-            padding: 0.8rem;
-            margin: 0.4rem 0;
-            background: rgba(168, 192, 255, 0.1);
-            border-radius: 10px;
-            border-left: 4px solid #c471ed;
-            color: #e0e0ff;
-            font-size: 0.9rem;
-        }
-
-        .payment-info {
-            background: rgba(168, 192, 255, 0.15);
-            padding: 1rem;
-            border-radius: 10px;
-            margin: 1rem 0;
-            border-left: 4px solid #c471ed;
-        }
-
-        .payment-info p {
-            color: #e0e0ff;
-            margin: 0;
-            font-size: 0.9rem;
-        }
-
-        .subscribe-btn {
-            width: 100%;
-            padding: 1.2rem 2rem;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border: none;
-            border-radius: 50px;
-            color: white;
-            font-size: 1.1rem;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-            transition: all 0.3s ease;
-            letter-spacing: 1px;
-            font-weight: 600;
-            margin-top: 1rem;
-        }
-
-        .subscribe-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.6);
         }
 
         .close-btn {
@@ -430,70 +369,68 @@
             width: 100%;
             border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.95rem;
         }
 
-        .close-btn:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .sound-toggle {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            z-index: 3;
-            background: rgba(168, 192, 255, 0.2);
-            border: 2px solid #a8c0ff;
-            padding: 0.6rem 1rem;
-            border-radius: 50px;
-            color: white;
-            cursor: pointer;
+        .premium-preview {
+            margin: 3rem 0;
+            padding: 2rem;
+            background: rgba(168, 192, 255, 0.05);
+            border: 2px solid rgba(168, 192, 255, 0.2);
+            border-radius: 20px;
             backdrop-filter: blur(10px);
-            transition: all 0.3s ease;
-            font-size: 0.85rem;
+            max-width: 800px;
         }
 
-        .sound-toggle:hover {
-            background: rgba(168, 192, 255, 0.3);
+        .premium-preview h3 {
+            color: #c471ed;
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .feature-card {
+            background: rgba(168, 192, 255, 0.08);
+            padding: 1.5rem;
+            border-radius: 15px;
+            border: 1px solid rgba(168, 192, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            background: rgba(168, 192, 255, 0.15);
+            border-color: #a8c0ff;
+            transform: translateY(-2px);
+        }
+
+        .feature-card .icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card h4 {
+            color: #a8c0ff;
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-card p {
+            color: #e0e0ff;
+            font-size: 0.85rem;
+            opacity: 0.8;
+            line-height: 1.4;
         }
 
         @media (max-width: 768px) {
-            .sound-toggle {
-                top: 0.5rem;
-                right: 0.5rem;
-                padding: 0.5rem 0.8rem;
-                font-size: 0.75rem;
-            }
-
-            .modal-content {
-                padding: 1.5rem;
-            }
-
-            .modal h2 {
-                font-size: 1.5rem;
-            }
-
-            .pricing-container {
-                gap: 0.8rem;
-            }
-
-            .price-card {
-                padding: 1.2rem 0.8rem;
-            }
-
-            .price-amount {
-                font-size: 2rem;
-            }
-
-            .features li {
-                padding: 0.7rem;
-                font-size: 0.85rem;
-            }
-        }
-
-        @media (max-width: 400px) {
-            .pricing-container {
+            .logo { font-size: 2.5rem; }
+            .features-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -504,6 +441,18 @@
     <div class="stars" id="stars"></div>
 
     <button class="sound-toggle" id="soundToggle">🔊 Sound: ON</button>
+
+    <div class="frequency-selector">
+        <label style="color: #a8c0ff; display: block; margin-bottom: 0.3rem;">🎵 Focus Frequency</label>
+        <select id="frequencySelect">
+            <option value="40">40 Hz - Gamma (Focus)</option>
+            <option value="432">432 Hz - Healing</option>
+            <option value="528">528 Hz - Transformation</option>
+            <option value="639">639 Hz - Connection</option>
+            <option value="741">741 Hz - Awakening</option>
+            <option value="852">852 Hz - Intuition</option>
+        </select>
+    </div>
 
     <div class="container">
         <h1 class="logo">SELENE</h1>
@@ -518,10 +467,50 @@
         </div>
 
         <div class="timer-display" id="timer">25:00</div>
-        <div class="phase-display" id="phase">🌑 New Moon → 🌒 Waxing Crescent - 🎯 Focus Time - Cycle 1/4</div>
+        <div class="phase-display" id="phase">🌑 New Moon - 🎯 Focus Time - Cycle 1/4</div>
         <p style="color: #a8c0ff; opacity: 0.6; margin-top: 1rem; font-size: 0.9rem;">✨ Click the moon to start ✨</p>
         
-        <!-- Notification Permission Banner -->
+        <!-- Premium Features Preview -->
+        <div class="premium-preview">
+            <h3>✨ Unlock Selene Pro ✨</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="icon">🪐</div>
+                    <h4>Premium Nebulas</h4>
+                    <p>Crab, Orion, Eagle & Ring nebula backgrounds with animated particles</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🌌</div>
+                    <h4>Galaxy Themes</h4>
+                    <p>Andromeda, Whirlpool, Sombrero galaxies with spiral animations</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🎧</div>
+                    <h4>Celestial Sounds</h4>
+                    <p>Pulsar rhythms, cosmic winds, stellar harmonics & binaural beats</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">☄️</div>
+                    <h4>Shooting Stars</h4>
+                    <p>Meteor animations crossing your screen during focus sessions</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">📈</div>
+                    <h4>Focus Analytics</h4>
+                    <p>Track productivity patterns, streaks & completion rates over time</p>
+                </div>
+                <div class="feature-card">
+                    <div class="icon">🎨</div>
+                    <h4>Custom Moons</h4>
+                    <p>Different moon textures, colors & phase animations to match your mood</p>
+                </div>
+            </div>
+            <button class="upgrade-btn" onclick="document.getElementById('upgradeModal').style.display='flex'" style="width: 100%; font-size: 1.1rem; padding: 1.2rem;">
+                🌟 Join Pro Waitlist - Get 50% Off at Launch
+            </button>
+        </div>
+        
+        <!-- Notification Banner -->
         <div id="notificationBanner" style="display: none; background: rgba(196, 113, 237, 0.2); border: 2px solid #c471ed; border-radius: 15px; padding: 1rem 1.5rem; margin-top: 1.5rem; max-width: 500px; text-align: center;">
             <p style="color: #e0e0ff; margin-bottom: 0.8rem; font-size: 0.95rem;">
                 🔔 <strong>Enable notifications to get alerts when your timer ends!</strong>
@@ -533,403 +522,117 @@
                 Maybe Later
             </button>
         </div>
-        
-        <!-- Pro Features Preview Section -->
-        <div style="margin-top: 4rem; text-align: center; max-width: 800px; padding: 0 1rem;">
-            <h3 style="color: #c471ed; font-size: 1.5rem; margin-bottom: 2rem; font-weight: 300; letter-spacing: 2px;">
-                ✨ Unlock Selene Pro ✨
-            </h3>
-            
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌌</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Premium Nebulas</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Explore the Crab, Orion, Eagle, and Ring Nebulas with stunning visuals</p>
-                </div>
-                
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌀</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Galaxy Themes</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Immerse yourself in Andromeda, Whirlpool, and Sombrero galaxies</p>
-                </div>
-                
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎵</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Celestial Sounds</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Pulsar rhythms, cosmic winds, and stellar harmonics to enhance focus</p>
-                </div>
-                
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🌠</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Shooting Stars</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Beautiful meteor animations crossing your screen as you work</p>
-                </div>
-                
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📊</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Focus Analytics</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Track your productivity patterns and streaks over time</p>
-                </div>
-                
-                <div style="background: rgba(168, 192, 255, 0.1); padding: 1.5rem; border-radius: 15px; border: 1px solid rgba(168, 192, 255, 0.3); backdrop-filter: blur(10px);">
-                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">🎨</div>
-                    <h4 style="color: #a8c0ff; margin-bottom: 0.5rem; font-size: 1.1rem;">Custom Moons</h4>
-                    <p style="color: #e0e0ff; opacity: 0.8; font-size: 0.9rem;">Choose from different moon textures and color schemes</p>
-                </div>
-            </div>
-            
-            <button class="upgrade-btn" style="font-size: 1.2rem; padding: 1.2rem 3rem; margin-bottom: 3rem;" onclick="document.getElementById('upgradeModal').style.display='flex'">
-                🌟 Join Pro Waitlist - Get 50% Off at Launch!
-            </button>
-        </div>
     </div>
 
     <div class="upgrade-section">
-        <button class="upgrade-btn" id="upgradeBtn">✨ UPGRADE TO PRO</button>
+        <button class="upgrade-btn" id="upgradeBtn">🌟 Join Pro Waitlist</button>
     </div>
 
     <div class="modal" id="upgradeModal">
         <div class="modal-content">
             <h2>Selene Pro</h2>
-            <p class="modal-subtitle">Unlock the cosmos and elevate your focus</p>
-            
-            <h3 class="plan-header">Choose Your Plan</h3>
+            <p style="color: #e0e0ff; text-align: center; margin-bottom: 1rem;">Join the waitlist for early access</p>
             
             <div class="pricing-container">
-                <div class="price-card active" id="monthlyCard">
+                <div class="price-card active">
                     <div class="price-amount">₹299</div>
-                    <div class="price-period">per month</div>
+                    <div style="color: #a8c0ff;">per month</div>
                 </div>
-                
-                <div class="price-card" id="yearlyCard">
-                    <div class="best-value">BEST VALUE</div>
+                <div class="price-card">
                     <div class="price-amount">₹749</div>
-                    <div class="price-period">per year</div>
-                    <div class="price-savings">Save ₹2839 (79%)</div>
+                    <div style="color: #a8c0ff;">per year</div>
+                    <div style="color: #4ade80; font-size: 0.85rem; margin-top: 0.5rem;">Save 79%</div>
                 </div>
-            </div>
-            
-            <ul class="features">
-                <li>🌌 10+ Premium Nebula Backgrounds</li>
-                <li>✨ Exclusive Galaxy Themes</li>
-                <li>🎵 Celestial Sound Library</li>
-                <li>🌠 Shooting Star Animations</li>
-                <li>📊 Advanced Focus Analytics</li>
-                <li>🎨 Customizable Moon Textures</li>
-            </ul>
-            
-            <div class="payment-info">
-                <p>
-                    🚀 <strong>Pro Version Coming Soon!</strong><br>
-                    Join the waitlist to get early access + special launch discount<br>
-                    Be the first to experience premium features
-                </p>
             </div>
             
             <div style="margin: 1rem 0;">
-                <input type="email" id="waitlistEmail" placeholder="Enter your email address" style="width: 100%; padding: 1rem; border: 2px solid rgba(168, 192, 255, 0.3); border-radius: 50px; background: rgba(168, 192, 255, 0.05); color: #e0e0ff; font-size: 1rem; margin-bottom: 0.5rem; outline: none;" />
-                <input type="text" id="waitlistName" placeholder="Your name (optional)" style="width: 100%; padding: 1rem; border: 2px solid rgba(168, 192, 255, 0.3); border-radius: 50px; background: rgba(168, 192, 255, 0.05); color: #e0e0ff; font-size: 1rem; outline: none;" />
+                <input type="email" id="waitlistEmail" placeholder="Enter your email" style="width: 100%; padding: 1rem; border: 2px solid rgba(168, 192, 255, 0.3); border-radius: 50px; background: rgba(168, 192, 255, 0.05); color: #e0e0ff; font-size: 1rem; margin-bottom: 0.5rem; outline: none;" />
             </div>
             
-            <button class="subscribe-btn" id="checkoutBtn">
-                <span id="btnText">🌟 Join Waitlist - Get Notified</span>
-            </button>
-            
-            <p style="text-align: center; color: #a8c0ff; font-size: 0.85rem; margin-top: 1rem; opacity: 0.7;">
-                💝 Early birds get 50% off at launch!
-            </p>
+            <button class="upgrade-btn" id="joinWaitlistBtn" style="width: 100%; margin-top: 1rem;">🌟 Join Waitlist</button>
             <button class="close-btn" id="closeModal">Maybe Later</button>
         </div>
     </div>
 
     <script>
-        // Create stars
+        // ========== STARS SETUP ==========
         const starsContainer = document.getElementById('stars');
         const stars = [];
-        for (let i = 0; i < 200; i++) {
+        
+        console.log('Creating stars...');
+        
+        for (let i = 0; i < 250; i++) {
             const star = document.createElement('div');
             star.className = 'star';
-            const size = Math.random() * 3;
+            const size = Math.random() * 3.5 + 1; // 1px to 4.5px - LARGER
             star.style.width = size + 'px';
             star.style.height = size + 'px';
-            star.style.left = Math.random() * 100 + '%';
-            star.style.top = Math.random() * 100 + '%';
+            const baseX = Math.random() * 100;
+            const baseY = Math.random() * 100;
+            star.style.left = baseX + '%';
+            star.style.top = baseY + '%';
             star.style.animationDelay = Math.random() * 3 + 's';
-            star.style.animationDuration = `twinkle ${Math.random() * 2 + 2}s infinite, float ${Math.random() * 50 + 80}s linear infinite`;
+            star.style.animationDuration = `${Math.random() * 2 + 2}s, ${Math.random() * 50 + 80}s`;
+            star.style.opacity = Math.random() * 0.6 + 0.4; // 0.4 to 1.0 opacity - BRIGHTER
             starsContainer.appendChild(star);
-            stars.push({
-                element: star,
-                baseX: parseFloat(star.style.left),
-                baseY: parseFloat(star.style.top)
-            });
+            stars.push({ element: star, baseX, baseY });
         }
+        
+        console.log('Stars created:', stars.length);
 
         // Mouse tracking for stars during break
-        let mouseX = 50;
-        let mouseY = 50;
-        
         document.addEventListener('mousemove', (e) => {
-            mouseX = (e.clientX / window.innerWidth) * 100;
-            mouseY = (e.clientY / window.innerHeight) * 100;
+            const mouseX = (e.clientX / window.innerWidth) * 100;
+            const mouseY = (e.clientY / window.innerHeight) * 100;
             
             if (isBreakTime && !isRunning) {
-                // Only move stars during break when timer is stopped
-                console.log('Moving stars towards cursor - Break time!');
-                stars.forEach((star, index) => {
+                stars.forEach(star => {
                     const dx = mouseX - star.baseX;
                     const dy = mouseY - star.baseY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     
                     if (distance > 0) {
-                        // Stars move towards cursor with diminishing effect based on distance
                         const moveAmount = Math.min(30, distance / 3);
                         const moveX = (dx / distance) * moveAmount;
                         const moveY = (dy / distance) * moveAmount;
-                        
                         star.element.style.transform = `translate(${moveX}px, ${moveY}px)`;
                     }
                 });
             } else {
-                // Reset stars when not in break or when timer is running
                 stars.forEach(star => {
                     star.element.style.transform = 'translate(0, 0)';
                 });
             }
         });
-        
-        // Also check periodically to reset stars
-        setInterval(() => {
-            if (!isBreakTime || isRunning) {
-                stars.forEach(star => {
-                    star.element.style.transform = 'translate(0, 0)';
-                });
-            }
-        }, 1000);
 
-        // Timer logic with localStorage persistence
+        // ========== TIMER VARIABLES ==========
         let timeInSeconds = 25 * 60;
         let totalTime = 25 * 60;
         let isRunning = false;
         let isBreakTime = false;
-        let interval;
         let currentCycle = 1;
-        let audioContext;
-        let oscillator;
-        let gainNode;
-        let soundEnabled = true;
-        let timerStartTime = null;
         let timerEndTime = null;
-        let checkInterval = null;
+        let interval = null;
+        let soundEnabled = true;
+        let selectedFrequency = 40;
+        let audioContext = null;
+        let oscillator = null;
+        let wakeLock = null;
 
-        // Save timer state to localStorage
-        function saveTimerState() {
-            const state = {
-                isRunning,
-                isBreakTime,
-                currentCycle,
-                timerEndTime,
-                timeInSeconds,
-                totalTime,
-                savedAt: Date.now()
-            };
-            localStorage.setItem('seleneTimerState', JSON.stringify(state));
-        }
-
-        // Load timer state from localStorage
-        function loadTimerState() {
-            const saved = localStorage.getItem('seleneTimerState');
-            if (!saved) return false;
-            
-            try {
-                const state = JSON.parse(saved);
-                
-                // Check if timer was running
-                if (state.isRunning && state.timerEndTime) {
-                    const now = Date.now();
-                    const remainingMs = state.timerEndTime - now;
-                    
-                    if (remainingMs > 0) {
-                        // Timer is still running
-                        isRunning = true;
-                        isBreakTime = state.isBreakTime;
-                        currentCycle = state.currentCycle;
-                        timerEndTime = state.timerEndTime;
-                        timeInSeconds = Math.ceil(remainingMs / 1000);
-                        totalTime = state.totalTime;
-                        
-                        console.log('Restored running timer:', {
-                            remaining: timeInSeconds + 's',
-                            isBreak: isBreakTime,
-                            cycle: currentCycle
-                        });
-                        
-                        startTimer(true); // Resume without resetting endTime
-                        return true;
-                    } else {
-                        // Timer expired while in background
-                        console.log('Timer expired in background');
-                        timeInSeconds = 0;
-                        completePomodoro();
-                        return true;
-                    }
-                }
-            } catch (e) {
-                console.error('Failed to load timer state:', e);
-            }
-            return false;
-        }
-
+        // ========== DOM ELEMENTS ==========
         const timer = document.getElementById('timer');
         const phase = document.getElementById('phase');
         const moon = document.getElementById('moon');
         const moonShadow = document.getElementById('moonShadow');
         const moonOverlay = document.getElementById('moonOverlay');
         const moonContainer = document.getElementById('moonContainer');
+        const soundToggle = document.getElementById('soundToggle');
+        const frequencySelect = document.getElementById('frequencySelect');
         const upgradeBtn = document.getElementById('upgradeBtn');
         const upgradeModal = document.getElementById('upgradeModal');
         const closeModal = document.getElementById('closeModal');
-        const soundToggle = document.getElementById('soundToggle');
 
-        const phases = ['New Moon', 'Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon'];
-
-        // Show notification banner if permission not granted
-        window.addEventListener('load', () => {
-            if ('Notification' in window) {
-                if (Notification.permission === 'default') {
-                    // Show the banner
-                    document.getElementById('notificationBanner').style.display = 'block';
-                } else if (Notification.permission === 'denied') {
-                    console.log('Notifications are blocked. User needs to enable them in browser settings.');
-                }
-            }
-        });
-
-        // Handle enable notifications button
-        document.getElementById('enableNotifications').addEventListener('click', async () => {
-            if ('Notification' in window) {
-                const permission = await Notification.requestPermission();
-                if (permission === 'granted') {
-                    document.getElementById('notificationBanner').style.display = 'none';
-                    // Show test notification
-                    showNotification(
-                        '🌙 Notifications Enabled!',
-                        'You\'ll now receive alerts when your Pomodoro sessions complete.'
-                    );
-                } else {
-                    alert('Please allow notifications in your browser settings to receive timer alerts.');
-                }
-            } else {
-                alert('Your browser doesn\'t support notifications.');
-            }
-        });
-
-        // Handle dismiss banner button
-        document.getElementById('dismissBanner').addEventListener('click', () => {
-            document.getElementById('notificationBanner').style.display = 'none';
-        });
-
-        // Request notification permission on page load
-        if ('Notification' in window && Notification.permission === 'default') {
-            Notification.requestPermission();
-        }
-
-        function showNotification(title, body) {
-            console.log('Showing notification:', title, body);
-            
-            // Simple approach - just show in-page alert
-            showInPageAlert(title, body);
-            
-            // Try browser notification if available
-            if ('Notification' in window && Notification.permission === 'granted') {
-                try {
-                    new Notification(title, {
-                        body: body,
-                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="48" fill="%23ffffff"/%3E%3C/svg%3E',
-                        tag: 'selene-' + Date.now()
-                    });
-                } catch(e) {
-                    console.log('Notification error:', e);
-                }
-            }
-            
-            // Play sound
-            if (soundEnabled) {
-                playNotificationSound();
-            }
-            
-            // Vibrate on mobile
-            if ('vibrate' in navigator) {
-                navigator.vibrate([200, 100, 200]);
-            }
-        }
-
-        function playNotificationSound() {
-            try {
-                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUhELTKXh8bllHAU2jdXxz3goBS185vPTizgKEly47OulUxELTKXh8bllHAU2jdXxz3goBS185vPTizgKElw');
-                audio.volume = 1.0;
-                audio.play().catch(e => console.log('Audio play failed:', e));
-            } catch(e) {
-                console.log('Audio error:', e);
-            }
-        }
-
-        // In-page alert banner
-        function showInPageAlert(title, body) {
-            // Remove any existing alert
-            const existingAlert = document.getElementById('inPageAlert');
-            if (existingAlert) {
-                existingAlert.remove();
-            }
-            
-            const alertDiv = document.createElement('div');
-            alertDiv.id = 'inPageAlert';
-            alertDiv.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                color: white;
-                padding: 2rem;
-                border-radius: 20px;
-                box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
-                z-index: 10000;
-                max-width: 90%;
-                text-align: center;
-                animation: bounceIn 0.5s;
-            `;
-            
-            alertDiv.innerHTML = `
-                <h2 style="font-size: 1.8rem; margin-bottom: 1rem;">${title}</h2>
-                <p style="font-size: 1.1rem; margin-bottom: 1.5rem; line-height: 1.5;">${body}</p>
-                <button onclick="document.getElementById('inPageAlert').remove()" style="
-                    background: white;
-                    color: #667eea;
-                    border: none;
-                    padding: 1rem 2rem;
-                    border-radius: 50px;
-                    font-size: 1rem;
-                    font-weight: bold;
-                    cursor: pointer;
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-                ">Got it! ✓</button>
-            `;
-            
-            document.body.appendChild(alertDiv);
-            
-            // Add bounce animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes bounceIn {
-                    0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
-                    50% { transform: translate(-50%, -50%) scale(1.05); }
-                    70% { transform: translate(-50%, -50%) scale(0.9); }
-                    100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-                }
-            `;
-            document.head.appendChild(style);
-        }
-
+        // ========== AUDIO FUNCTIONS ==========
         function initAudio() {
             if (!audioContext) {
                 audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -939,31 +642,24 @@
         function playAmbientSound() {
             if (!soundEnabled || !audioContext) return;
             
-            if (oscillator) {
-                oscillator.stop();
-            }
+            stopAmbientSound();
 
-            // Create multiple oscillators for richer sound
             oscillator = audioContext.createOscillator();
             const oscillator2 = audioContext.createOscillator();
-            gainNode = audioContext.createGain();
+            const gainNode = audioContext.createGain();
             
-            // Main tone - deeper frequency
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(220, audioContext.currentTime); // A3 note
+            oscillator.frequency.setValueAtTime(selectedFrequency, audioContext.currentTime);
             
-            // Harmonic tone
             oscillator2.type = 'sine';
-            oscillator2.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note (octave higher)
+            oscillator2.frequency.setValueAtTime(selectedFrequency * 2, audioContext.currentTime);
             
-            // Much louder gain
             gainNode.gain.setValueAtTime(0, audioContext.currentTime);
-            gainNode.gain.linearRampToValueAtTime(0.15, audioContext.currentTime + 0.1);
+            gainNode.gain.linearRampToValueAtTime(0.12, audioContext.currentTime + 0.1);
             
-            // Add some filtering for warmth
             const filter = audioContext.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(800, audioContext.currentTime);
+            filter.frequency.setValueAtTime(1200, audioContext.currentTime);
             
             oscillator.connect(filter);
             oscillator2.connect(filter);
@@ -973,7 +669,6 @@
             oscillator.start();
             oscillator2.start();
             
-            // Store second oscillator to stop it later
             window.oscillator2 = oscillator2;
         }
 
@@ -988,192 +683,128 @@
             }
         }
 
-        soundToggle.addEventListener('click', () => {
-            soundEnabled = !soundEnabled;
-            soundToggle.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
-            
-            if (!soundEnabled) {
-                stopAmbientSound();
-            } else if (isRunning) {
-                initAudio();
-                playAmbientSound();
-            }
-        });
-
+        // ========== DISPLAY UPDATES ==========
         function updateDisplay() {
             const minutes = Math.floor(timeInSeconds / 60);
             const seconds = timeInSeconds % 60;
             timer.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-            // During break time, don't change moon phases - keep it as is
+            // Update page title
+            if (isRunning) {
+                const icon = isBreakTime ? '☕' : '🎯';
+                document.title = `${icon} ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')} - Selene`;
+            } else {
+                document.title = 'Selene - Lunar Pomodoro Timer';
+            }
+
+            // During break, freeze moon at current phase
             if (isBreakTime) {
                 const sessionType = '☕ Break Time';
-                const completedCyclesProgress = (currentCycle - 1) * 0.25;
-                
                 let phaseName;
-                if (completedCyclesProgress <= 0.25) {
-                    phaseName = '🌒 Waxing Crescent';
-                } else if (completedCyclesProgress <= 0.5) {
-                    phaseName = '🌓 First Quarter';
-                } else if (completedCyclesProgress <= 0.75) {
-                    phaseName = '🌔 Waxing Gibbous';
-                } else {
-                    phaseName = '🌕 Full Moon';
-                }
+                if (currentCycle === 1) phaseName = '🌒 Waxing Crescent';
+                else if (currentCycle === 2) phaseName = '🌓 First Quarter';
+                else if (currentCycle === 3) phaseName = '🌔 Waxing Gibbous';
+                else phaseName = '🌕 Full Moon';
                 
                 phase.textContent = `${phaseName} - ${sessionType} - Cycle ${currentCycle}/4`;
                 return;
             }
 
-            // Calculate progress within current session (0 to 1)
+            // Calculate moon phase progress
             const progress = (totalTime - timeInSeconds) / totalTime;
-            
-            // Calculate overall moon phase based on completed cycles + current progress
-            const completedCyclesProgress = (currentCycle - 1) * 0.25;
-            const currentCycleProgress = progress * 0.25;
-            const totalMoonProgress = completedCyclesProgress + currentCycleProgress;
-            
-            console.log('Moon progress:', {
+            const completedCycles = (currentCycle - 1) * 0.25;
+            const totalMoonProgress = completedCycles + (progress * 0.25);
+
+            console.log('🌙 Moon progress:', {
                 cycle: currentCycle,
                 sessionProgress: (progress * 100).toFixed(1) + '%',
-                totalProgress: (totalMoonProgress * 100).toFixed(1) + '%'
+                cycleProgress: (completedCycles * 100).toFixed(1) + '%',
+                totalMoonProgress: (totalMoonProgress * 100).toFixed(1) + '%'
             });
-            
-            // Determine phase name
-            let phaseName;
-            if (totalMoonProgress < 0.25) {
-                phaseName = '🌑 New Moon → 🌒 Waxing Crescent';
-            } else if (totalMoonProgress < 0.5) {
-                phaseName = '🌒 Waxing Crescent → 🌓 First Quarter';
-            } else if (totalMoonProgress < 0.75) {
-                phaseName = '🌓 First Quarter → 🌔 Waxing Gibbous';
-            } else if (totalMoonProgress < 1.0) {
-                phaseName = '🌔 Waxing Gibbous → 🌕 Full Moon';
-            } else {
-                phaseName = '🌕✨ Full Moon ✨';
-            }
-            
-            const sessionType = '🎯 Focus Time';
-            phase.textContent = `${phaseName} - ${sessionType} - Cycle ${currentCycle}/4`;
 
-            // Create realistic moon phases
-            // Overlay fades out gradually (reveals the white moon base)
-            moonOverlay.style.opacity = Math.max(0, 1 - (totalMoonProgress * 1.2));
+            // Phase names
+            let phaseName;
+            if (totalMoonProgress < 0.25) phaseName = '🌑 New Moon → 🌒 Waxing Crescent';
+            else if (totalMoonProgress < 0.5) phaseName = '🌒 Waxing Crescent → 🌓 First Quarter';
+            else if (totalMoonProgress < 0.75) phaseName = '🌓 First Quarter → 🌔 Waxing Gibbous';
+            else if (totalMoonProgress < 1.0) phaseName = '🌔 Waxing Gibbous → 🌕 Full Moon';
+            else phaseName = '🌕✨ Full Moon ✨';
             
-            // Shadow creates the crescent/quarter/gibbous shapes
-            // totalMoonProgress goes from 0 to 1 over ALL 4 cycles
+            phase.textContent = `${phaseName} - 🎯 Focus Time - Cycle ${currentCycle}/4`;
+
+            // Moon visual updates - FIXED PROGRESSION
+            // Overlay fades slowly across all 4 cycles
+            moonOverlay.style.opacity = Math.max(0, 1 - (totalMoonProgress * 0.9));
             
-            // Shadow moves from fully covering (0%) to completely off-screen (200%)
-            const shadowTranslateX = totalMoonProgress * 200;
-            
-            // Shadow also shrinks to create curved terminator
-            // Slower shrinking to maintain crescent longer
-            const shadowScale = Math.max(0.05, 1.3 - (totalMoonProgress * 1.25));
-            
+            // Shadow movement - moves across 4 cycles, not 1
+            // At 0%: shadow fully covers moon
+            // At 25% (end cycle 1): thin crescent visible
+            // At 50% (end cycle 2): half moon
+            // At 75% (end cycle 3): gibbous
+            // At 100% (end cycle 4): full moon
+            const shadowTranslateX = totalMoonProgress * 400; // Move 400% to fully clear
+            const shadowScale = Math.max(0.01, 2.0 - (totalMoonProgress * 1.99)); // Scale from 2.0 to 0.01
             moonShadow.style.transform = `translateX(${shadowTranslateX}%) scaleX(${shadowScale})`;
             
-            console.log('Moon visual:', {
-                totalProgress: (totalMoonProgress * 100).toFixed(1) + '%',
-                overlayOpacity: moonOverlay.style.opacity,
-                shadowTranslate: shadowTranslateX.toFixed(1) + '%',
-                shadowScale: shadowScale.toFixed(2)
-            });
+            // Brightness increases with each cycle
+            const moonBrightness = 1.3 + (totalMoonProgress * 0.7); // 1.3 to 2.0
+            moon.style.filter = `brightness(${moonBrightness})`;
             
-            // Moon glow increases with progress
-            const glowIntensity = 40 + (totalMoonProgress * 80);
-            const glowOpacity = 0.3 + (totalMoonProgress * 0.7);
+            // Glow increases dramatically across all cycles
+            const glowIntensity = 40 + (totalMoonProgress * 140);
+            const glowOpacity = 0.6 + (totalMoonProgress * 0.4);
             moon.style.boxShadow = `
                 0 0 ${glowIntensity}px rgba(255, 255, 255, ${glowOpacity}),
-                0 0 ${glowIntensity * 1.5}px rgba(200, 200, 255, ${glowOpacity * 0.5}),
-                inset -15px -15px 40px rgba(0, 0, 0, ${0.2 - totalMoonProgress * 0.15})
+                0 0 ${glowIntensity * 2}px rgba(255, 255, 255, ${glowOpacity * 0.6}),
+                0 0 ${glowIntensity * 3}px rgba(200, 200, 255, ${glowOpacity * 0.4})
             `;
+
+            saveTimerState();
         }
 
+        // ========== TIMER CONTROL ==========
         function tick() {
             if (!isRunning || !timerEndTime) return;
             
-            // Calculate remaining time based on actual clock time
             const now = Date.now();
             const remainingMs = timerEndTime - now;
             
             if (remainingMs <= 0) {
-                // Timer completed
                 timeInSeconds = 0;
                 updateDisplay();
-                updatePageTitle(); // Update title
                 completePomodoro();
                 return;
             }
             
-            // Update display with accurate time
             timeInSeconds = Math.ceil(remainingMs / 1000);
             updateDisplay();
-            updatePageTitle(); // Update title with countdown
-            saveTimerState(); // Save state every tick
         }
 
-        function startTimer(isResuming = false) {
-            // If not resuming, calculate new end time
-            if (!isResuming) {
-                timerStartTime = Date.now();
-                timerEndTime = timerStartTime + (timeInSeconds * 1000);
-            }
-            
-            console.log('Starting timer:', {
-                duration: timeInSeconds + 's',
-                endTime: new Date(timerEndTime).toLocaleTimeString(),
-                isBreak: isBreakTime,
-                cycle: currentCycle,
-                isResuming
-            });
+        function startTimer() {
+            timerEndTime = Date.now() + (timeInSeconds * 1000);
+            isRunning = true;
             
             initAudio();
             playAmbientSound();
-            isRunning = true;
+            requestWakeLock();
             
-            // Clear any existing intervals
             if (interval) clearInterval(interval);
-            if (checkInterval) clearInterval(checkInterval);
-            
-            // Primary timer update (every second)
             interval = setInterval(tick, 1000);
+            tick();
             
-            // Aggressive checking (every 100ms) to catch wake-ups
-            checkInterval = setInterval(() => {
-                if (isRunning && timerEndTime) {
-                    const now = Date.now();
-                    const remainingMs = timerEndTime - now;
-                    
-                    if (remainingMs <= 0 && timeInSeconds > 0) {
-                        // Timer expired, trigger completion
-                        console.log('Timer expired (detected by check interval)');
-                        tick();
-                    }
-                }
-            }, 100);
-            
-            tick(); // Immediate update
-            saveTimerState();
+            console.log('▶️ Timer started:', { cycle: currentCycle, isBreak: isBreakTime, duration: timeInSeconds });
         }
 
         function stopTimer() {
             isRunning = false;
-            if (interval) {
-                clearInterval(interval);
-                interval = null;
-            }
-            if (checkInterval) {
-                clearInterval(checkInterval);
-                checkInterval = null;
-            }
-            timerStartTime = null;
+            if (interval) clearInterval(interval);
             timerEndTime = null;
             stopAmbientSound();
+            releaseWakeLock();
             saveTimerState();
         }
 
         function resetTimer() {
-            console.log('Resetting timer');
             stopTimer();
             isBreakTime = false;
             currentCycle = 1;
@@ -1183,60 +814,279 @@
             localStorage.removeItem('seleneTimerState');
         }
 
-        // Handle visibility change - restore timer when tab becomes visible
-        document.addEventListener('visibilitychange', function() {
-            console.log('Visibility changed:', document.hidden ? 'hidden' : 'visible');
+        function completePomodoro() {
+            console.log('⏰ Timer complete!', { isBreak: isBreakTime, cycle: currentCycle });
             
-            if (!document.hidden) {
-                // Tab is now visible
-                if (isRunning && timerEndTime) {
-                    // Force recalculation
-                    tick();
+            stopTimer();
+            
+            if (!isBreakTime) {
+                // FOCUS COMPLETED - START BREAK
+                const phases = ['Waxing Crescent', 'First Quarter', 'Waxing Gibbous', 'Full Moon'];
+                showNotification(
+                    `🎉 Cycle ${currentCycle} Complete!`,
+                    `Moon: ${phases[currentCycle - 1]}. Take a 5-min break. Click moon to start.`
+                );
+                
+                isBreakTime = true;
+                timeInSeconds = 5 * 60;
+                totalTime = 5 * 60;
+                
+            } else {
+                // BREAK COMPLETED - NEXT CYCLE
+                isBreakTime = false;
+                
+                if (currentCycle >= 4) {
+                    showNotification('🌕 FULL MOON ACHIEVED!', 'Completed 4 cycles! Take a long break. Click to restart.');
+                    currentCycle = 1;
                 } else {
-                    // Try to restore from localStorage
-                    loadTimerState();
+                    currentCycle++;
+                    showNotification('☕ Break Over!', `Ready for Cycle ${currentCycle}? Click the moon!`);
                 }
+                
+                timeInSeconds = 25 * 60;
+                totalTime = 25 * 60;
             }
-        });
+            
+            updateDisplay();
+            moon.style.animation = 'pulse 1s ease-in-out 3';
+            setTimeout(() => { moon.style.animation = ''; }, 3000);
+        }
 
-        // Check on page load
-        window.addEventListener('load', function() {
-            console.log('Page loaded, checking for saved timer state');
-            loadTimerState();
-        });
+        // ========== NOTIFICATIONS ==========
+        function checkNotificationPermission() {
+            if (!('Notification' in window)) {
+                console.log('Browser does not support notifications');
+                return 'unsupported';
+            }
+            return Notification.permission;
+        }
 
-        // Periodic aggressive check (every 500ms)
-        setInterval(function() {
-            if (isRunning && !document.hidden && timerEndTime) {
-                const now = Date.now();
-                const remainingMs = timerEndTime - now;
-                
-                // If there's a big discrepancy, force update
-                const displayedSeconds = timeInSeconds;
-                const actualSeconds = Math.ceil(remainingMs / 1000);
-                
-                if (Math.abs(displayedSeconds - actualSeconds) > 2) {
-                    console.log('Timer discrepancy detected, forcing update');
-                    tick();
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    console.log('Notification permission:', permission);
+                    if (permission === 'granted') {
+                        document.getElementById('notificationBanner').style.display = 'none';
+                        // Show test notification
+                        const testNotif = new Notification('🌙 Selene Notifications Enabled!', {
+                            body: 'You\'ll now receive alerts when your focus and break sessions complete.',
+                            icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="48" fill="%23ffffff"/%3E%3C/svg%3E',
+                            tag: 'selene-test',
+                            requireInteraction: false
+                        });
+                        testNotif.onclick = () => {
+                            window.focus();
+                            testNotif.close();
+                        };
+                    } else if (permission === 'denied') {
+                        showPermissionGuide();
+                    }
+                });
+            }
+        }
+
+        function showPermissionGuide() {
+            const guide = document.createElement('div');
+            guide.style.cssText = `
+                position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #1a0033 0%, #2d0a4e 100%);
+                color: white; padding: 2rem; border-radius: 20px; border: 2px solid #c471ed;
+                box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5); z-index: 10000;
+                max-width: 90%; text-align: center;
+            `;
+            
+            guide.innerHTML = `
+                <h2 style="font-size: 1.5rem; margin-bottom: 1rem; color: #c471ed;">🔔 Enable Notifications</h2>
+                <p style="margin-bottom: 1rem; color: #e0e0ff;">To receive timer alerts, please enable notifications in your browser settings:</p>
+                <ol style="text-align: left; color: #a8c0ff; margin-bottom: 1.5rem; padding-left: 2rem;">
+                    <li>Click the 🔒 lock icon in the address bar</li>
+                    <li>Find "Notifications" in the permissions list</li>
+                    <li>Change it to "Allow"</li>
+                    <li>Refresh this page</li>
+                </ol>
+                <button onclick="this.parentElement.remove()" style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border: none; padding: 1rem 2rem; border-radius: 50px;
+                    color: white; font-size: 1rem; font-weight: bold; cursor: pointer;">
+                    Got it!
+                </button>
+            `;
+            document.body.appendChild(guide);
+        }
+
+        function showNotification(title, body) {
+            console.log('🔔 Attempting notification:', title, body);
+            
+            const permission = checkNotificationPermission();
+            console.log('Permission status:', permission);
+            
+            // Try browser notification FIRST (most important for background alerts)
+            if (permission === 'granted') {
+                try {
+                    console.log('Creating browser notification...');
+                    const notification = new Notification(title, { 
+                        body, 
+                        tag: 'selene-timer-' + Date.now(),
+                        icon: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Cdefs%3E%3CradialGradient id="moon"%3E%3Cstop offset="0%25" stop-color="%23ffffff"/%3E%3Cstop offset="100%25" stop-color="%23e0e0e0"/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx="50" cy="50" r="45" fill="url(%23moon)" stroke="%23cccccc" stroke-width="2"/%3E%3Ccircle cx="35" cy="35" r="4" fill="%23999" opacity="0.3"/%3E%3Ccircle cx="60" cy="45" r="5" fill="%23999" opacity="0.3"/%3E%3C/svg%3E',
+                        badge: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Ccircle cx="50" cy="50" r="48" fill="%23ffffff"/%3E%3C/svg%3E',
+                        requireInteraction: true,
+                        silent: false,
+                        vibrate: [200, 100, 200, 100, 200],
+                        timestamp: Date.now(),
+                        renotify: true
+                    });
+                    
+                    notification.onclick = function() {
+                        console.log('Notification clicked - focusing window');
+                        window.focus();
+                        notification.close();
+                    };
+                    
+                    notification.onshow = function() {
+                        console.log('✅ Browser notification displayed');
+                    };
+                    
+                    notification.onerror = function(e) {
+                        console.error('❌ Notification display error:', e);
+                    };
+                    
+                    notification.onclose = function() {
+                        console.log('Notification closed');
+                    };
+                    
+                    console.log('✅ Browser notification created successfully');
+                } catch(e) {
+                    console.error('❌ Notification creation error:', e);
                 }
+            } else if (permission === 'default') {
+                console.log('⚠️ Permission not granted, showing banner');
+                setTimeout(() => {
+                    const banner = document.getElementById('notificationBanner');
+                    if (banner) banner.style.display = 'block';
+                }, 1000);
+            } else if (permission === 'denied') {
+                console.log('❌ Notifications blocked by user - showing guide');
+                showPermissionGuide();
             }
-        }, 500);
+            
+            // ALSO show in-page alert (for immediate visibility)
+            showInPageAlert(title, body);
+            
+            // Play sound
+            try {
+                const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUhELTKXh8bllHAU2jdXxz3goBS185vPTizgKEly47OulUxELTKXh8bllHAU2jdXxz3goBS185vPTizgKElw');
+                audio.volume = 0.8;
+                const playPromise = audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.then(() => {
+                        console.log('✅ Audio alert played');
+                    }).catch(e => {
+                        console.log('Audio play prevented:', e);
+                    });
+                }
+            } catch(e) {
+                console.log('Audio error:', e);
+            }
+            
+            // Vibrate on mobile
+            if ('vibrate' in navigator) {
+                navigator.vibrate([200, 100, 200, 100, 200]);
+                console.log('📳 Vibration triggered');
+            }
+        }
 
-        // Wake lock API for mobile (keeps timer running)
-        let wakeLock = null;
+        function showInPageAlert(title, body) {
+            const existing = document.getElementById('inPageAlert');
+            if (existing) existing.remove();
+            
+            const alert = document.createElement('div');
+            alert.id = 'inPageAlert';
+            alert.style.cssText = `
+                position: fixed; 
+                top: 50%; 
+                left: 50%; 
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white; 
+                padding: 2.5rem; 
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7); 
+                z-index: 10001;
+                max-width: 90%; 
+                min-width: 300px;
+                text-align: center; 
+                animation: bounceIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                border: 3px solid rgba(255, 255, 255, 0.3);
+            `;
+            
+            alert.innerHTML = `
+                <h2 style="font-size: 2rem; margin-bottom: 1rem; text-shadow: 0 2px 10px rgba(0,0,0,0.3);">${title}</h2>
+                <p style="font-size: 1.2rem; margin-bottom: 2rem; line-height: 1.6; opacity: 0.95;">${body}</p>
+                <button onclick="this.parentElement.remove()" style="
+                    background: white; 
+                    color: #667eea; 
+                    border: none;
+                    padding: 1rem 2.5rem; 
+                    border-radius: 50px; 
+                    font-size: 1.1rem;
+                    font-weight: bold; 
+                    cursor: pointer;
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                    transition: all 0.3s ease;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">Got it! ✓</button>
+            `;
+            
+            document.body.appendChild(alert);
+            
+            console.log('✅ In-page alert shown');
+            
+            // Auto-remove after 30 seconds
+            setTimeout(() => {
+                if (alert.parentElement) {
+                    alert.remove();
+                }
+            }, 30000);
+        }
+
+        // ========== STORAGE ==========
+        function saveTimerState() {
+            localStorage.setItem('seleneTimerState', JSON.stringify({
+                isRunning, isBreakTime, currentCycle, timerEndTime,
+                timeInSeconds, totalTime, savedAt: Date.now()
+            }));
+        }
+
+        function loadTimerState() {
+            const saved = localStorage.getItem('seleneTimerState');
+            if (!saved) return;
+            
+            try {
+                const state = JSON.parse(saved);
+                if (state.isRunning && state.timerEndTime) {
+                    const remainingMs = state.timerEndTime - Date.now();
+                    if (remainingMs > 0) {
+                        isBreakTime = state.isBreakTime;
+                        currentCycle = state.currentCycle;
+                        timerEndTime = state.timerEndTime;
+                        timeInSeconds = Math.ceil(remainingMs / 1000);
+                        totalTime = state.totalTime;
+                        startTimer();
+                    } else {
+                        completePomodoro();
+                    }
+                }
+            } catch (e) {
+                console.error('Load state error:', e);
+            }
+        }
+
+        // ========== WAKE LOCK ==========
         async function requestWakeLock() {
             try {
                 if ('wakeLock' in navigator) {
                     wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('Wake lock acquired');
-                    
-                    wakeLock.addEventListener('release', () => {
-                        console.log('Wake lock released');
-                    });
                 }
-            } catch (err) {
-                console.log('Wake lock error:', err);
-            }
+            } catch (e) {}
         }
 
         function releaseWakeLock() {
@@ -1246,111 +1096,43 @@
             }
         }
 
-        function completePomodoro() {
-            console.log('Pomodoro complete!', { isBreak: isBreakTime, cycle: currentCycle });
-            
-            releaseWakeLock(); // Release wake lock when timer completes
-            
-            stopAmbientSound();
-            isRunning = false;
-            if (interval) {
-                clearInterval(interval);
-                interval = null;
-            }
-            if (checkInterval) {
-                clearInterval(checkInterval);
-                checkInterval = null;
-            }
-            timerStartTime = null;
-            timerEndTime = null;
-            
-            if (!isBreakTime) {
-                // Just finished focus time, prepare for break
-                const cyclePhase = currentCycle === 1 ? 'Waxing Crescent' : 
-                                 currentCycle === 2 ? 'First Quarter' :
-                                 currentCycle === 3 ? 'Waxing Gibbous' : 'Full Moon';
-                
-                console.log('Focus complete, ready for break');
-                isBreakTime = true;
-                timeInSeconds = 5 * 60; // 5 minute break
-                totalTime = 5 * 60;
-                updateDisplay(); // Update to show break status
-                saveTimerState(); // Save the new break state
-                
-                showNotification(
-                    `🎉 Focus Session ${currentCycle} Complete!`,
-                    `Great work! Your moon grew to ${cyclePhase}. Time for a 5-minute break. Click the moon to start break.`
-                );
-                
-                // Celebration animation
-                moon.style.animation = 'pulse 1s ease-in-out 3';
-                setTimeout(() => {
-                    moon.style.animation = '';
-                }, 3000);
-                
-            } else {
-                // Just finished break time, prepare for next focus cycle
-                console.log('Break finished, ready for next cycle');
-                
-                isBreakTime = false;
-                
-                // Check if we completed all 4 cycles
-                if (currentCycle >= 4) {
-                    // Completed all 4 cycles - moon is now FULL!
-                    console.log('All cycles complete! Full moon achieved!');
-                    
-                    // Reset to cycle 1 for next round
-                    currentCycle = 1;
-                    timeInSeconds = 25 * 60;
-                    totalTime = 25 * 60;
-                    updateDisplay();
-                    saveTimerState();
-                    
-                    showNotification(
-                        '🌕 FULL MOON ACHIEVED! 🌕',
-                        'Amazing! You completed all 4 Pomodoro cycles. Your moon is now fully illuminated! Take a longer break (15-30 min). Click moon to start a new round.'
-                    );
-                } else {
-                    // Move to next cycle
-                    currentCycle++;
-                    console.log('Moving to cycle', currentCycle);
-                    
-                    timeInSeconds = 25 * 60; // Set up for next focus
-                    totalTime = 25 * 60;
-                    updateDisplay(); // Update to show new cycle
-                    saveTimerState(); // Save the new cycle state
-                    
-                    showNotification(
-                        '☕ Break Time Over!',
-                        `Ready for Cycle ${currentCycle}? Click the moon to start your next focus session!`
-                    );
-                }
-                
-                // Celebration animation
-                moon.style.animation = 'pulse 1s ease-in-out 3';
-                setTimeout(() => {
-                    moon.style.animation = '';
-                }, 3000);
-            }
-        }
-
+        // ========== EVENT LISTENERS ==========
         moonContainer.addEventListener('click', () => {
             if (!isRunning) {
-                // Check if notifications are enabled, if not, show reminder
                 if ('Notification' in window && Notification.permission === 'default') {
                     document.getElementById('notificationBanner').style.display = 'block';
                 }
-                
-                // Request wake lock on mobile
-                requestWakeLock();
-                
                 startTimer();
             } else {
-                releaseWakeLock();
                 resetTimer();
             }
         });
 
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊 Sound: ON' : '🔇 Sound: OFF';
+            if (!soundEnabled) stopAmbientSound();
+            else if (isRunning) playAmbientSound();
+        });
+
+        frequencySelect.addEventListener('change', (e) => {
+            selectedFrequency = parseFloat(e.target.value);
+            if (isRunning && soundEnabled) {
+                stopAmbientSound();
+                playAmbientSound();
+            }
+        });
+
+        // Notification permission
+        document.getElementById('enableNotifications')?.addEventListener('click', () => {
+            requestNotificationPermission();
+        });
+
+        document.getElementById('dismissBanner')?.addEventListener('click', () => {
+            document.getElementById('notificationBanner').style.display = 'none';
+        });
+
+        // Modal
         upgradeBtn.addEventListener('click', () => {
             upgradeModal.style.display = 'flex';
         });
@@ -1365,45 +1147,8 @@
             }
         });
 
-        updateDisplay();
-
-        // Pricing selection
-        let selectedPlan = 'monthly';
-        
-        function selectPlan(plan) {
-            selectedPlan = plan;
-            const monthlyCard = document.getElementById('monthlyCard');
-            const yearlyCard = document.getElementById('yearlyCard');
-            
-            if (plan === 'monthly') {
-                monthlyCard.classList.add('active');
-                yearlyCard.classList.remove('active');
-            } else {
-                yearlyCard.classList.add('active');
-                monthlyCard.classList.remove('active');
-            }
-        }
-        
-        // Add click listeners after modal content is loaded
-        setTimeout(() => {
-            const monthlyCard = document.getElementById('monthlyCard');
-            const yearlyCard = document.getElementById('yearlyCard');
-            
-            if (monthlyCard && yearlyCard) {
-                monthlyCard.addEventListener('click', () => selectPlan('monthly'));
-                yearlyCard.addEventListener('click', () => selectPlan('yearly'));
-                console.log('Pricing cards initialized successfully');
-            }
-        }, 100);
-
-        // Waitlist System
-        const waitlistData = [];
-        
-        document.getElementById('checkoutBtn').addEventListener('click', async () => {
+        document.getElementById('joinWaitlistBtn')?.addEventListener('click', () => {
             const email = document.getElementById('waitlistEmail').value.trim();
-            const name = document.getElementById('waitlistName').value.trim();
-            
-            // Validate email
             if (!email) {
                 alert('Please enter your email address');
                 return;
@@ -1415,70 +1160,75 @@
                 return;
             }
             
-            // Store waitlist data
-            const waitlistEntry = {
-                email: email,
-                name: name || 'Anonymous',
-                plan: selectedPlan,
-                timestamp: new Date().toISOString(),
-                planPrice: selectedPlan === 'monthly' ? '₹299/month' : '₹749/year'
-            };
+            console.log('Waitlist signup:', email);
+            alert(`🎉 You're on the waitlist!\n\nWe'll email you at ${email} when Selene Pro launches.\n\n💝 Early supporters get 50% off!`);
             
-            // In a real app, you would send this to your backend/database
-            // For now, we'll store it in memory and log it
-            waitlistData.push(waitlistEntry);
-            
-            console.log('=== NEW WAITLIST SIGNUP ===');
-            console.log('Email:', email);
-            console.log('Name:', name || 'Not provided');
-            console.log('Interested Plan:', selectedPlan === 'monthly' ? 'Monthly (₹299)' : 'Yearly (₹749)');
-            console.log('Total Waitlist:', waitlistData.length);
-            console.log('========================');
-            
-            // Show success message
-            alert(`🎉 You're on the waitlist!\n\nWe'll email you at ${email} when Selene Pro launches.\n\n💝 As an early supporter, you'll get 50% off!`);
-            
-            // Clear form
             document.getElementById('waitlistEmail').value = '';
-            document.getElementById('waitlistName').value = '';
-            
-            // Close modal
-            document.getElementById('upgradeModal').style.display = 'none';
-            
-            // Optional: Send to Google Sheets or other service
-            // You can integrate this later when ready
+            upgradeModal.style.display = 'none';
         });
-        
-        // Later, when you're ready to enable payments, replace the above with:
-        // Razorpay Integration (commented out for now)
-        /*
-        const RAZORPAY_KEY_ID = 'rzp_test_YOUR_KEY_ID_HERE';
-        const RAZORPAY_MONTHLY_PLAN_ID = 'plan_YOUR_MONTHLY_PLAN_ID';
-        const RAZORPAY_YEARLY_PLAN_ID = 'plan_YOUR_YEARLY_PLAN_ID';
-        
-        document.getElementById('checkoutBtn').addEventListener('click', async () => {
-            const planId = selectedPlan === 'monthly' ? RAZORPAY_MONTHLY_PLAN_ID : RAZORPAY_YEARLY_PLAN_ID;
-            const amount = selectedPlan === 'monthly' ? 29900 : 74900;
-            const planName = selectedPlan === 'monthly' ? 'Monthly' : 'Yearly';
-            
-            const options = {
-                key: RAZORPAY_KEY_ID,
-                amount: amount,
-                currency: 'INR',
-                name: 'Selene Pro',
-                description: `${planName} Subscription`,
-                handler: function (response) {
-                    alert('🎉 Payment Successful! Welcome to Selene Pro!');
-                    document.getElementById('upgradeModal').style.display = 'none';
-                },
-                prefill: { name: '', email: '', contact: '' },
-                theme: { color: '#667eea' }
-            };
-            
-            const rzp = new Razorpay(options);
-            rzp.open();
+
+        // Visibility change
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden && isRunning) {
+                tick();
+            } else if (!document.hidden) {
+                loadTimerState();
+            }
         });
-        */
+
+        // Periodic check
+        setInterval(() => {
+            if (isRunning && timerEndTime) {
+                const now = Date.now();
+                const actualSeconds = Math.ceil((timerEndTime - now) / 1000);
+                if (Math.abs(timeInSeconds - actualSeconds) > 2) {
+                    tick();
+                }
+            }
+        }, 500);
+
+        // ========== INITIALIZATION ==========
+        window.addEventListener('load', () => {
+            loadTimerState();
+            updateDisplay();
+            
+            // Check notification permission on load
+            const permission = checkNotificationPermission();
+            console.log('🔔 Initial notification permission status:', permission);
+            
+            if (permission === 'default') {
+                // Show banner after 3 seconds
+                console.log('Showing notification permission banner in 3 seconds...');
+                setTimeout(() => {
+                    const banner = document.getElementById('notificationBanner');
+                    if (banner) {
+                        banner.style.display = 'block';
+                        console.log('Banner displayed');
+                    }
+                }, 3000);
+            } else if (permission === 'denied') {
+                console.log('❌ Notifications are blocked. In-page alerts will be used instead.');
+            } else if (permission === 'granted') {
+                console.log('✅ Notifications are enabled and ready');
+            }
+            
+            // Test notification support
+            if (!('Notification' in window)) {
+                console.warn('⚠️ This browser does not support notifications');
+            }
+        });
+
+        // Add bounce animation style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes bounceIn {
+                0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0; }
+                50% { transform: translate(-50%, -50%) scale(1.05); }
+                70% { transform: translate(-50%, -50%) scale(0.9); }
+                100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>
